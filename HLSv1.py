@@ -60,7 +60,7 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-TARGETDURATION which specifies the maximum media file duration
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
-	placeholder = True
+	type = ""
 	
 	
 class MasterPlaylist(Playlist):
@@ -70,7 +70,8 @@ class MasterPlaylist(Playlist):
 	# Has a list of object references for each URL.ts media variant
 	# They have to be able to create objects of VariantPlaylist
 	
-	variantList = []
+	variantList = []  #List of variant objects
+	variantURLs = []  #List of URLs for each variant object
 
 class Visitor:
     def __str__(self):
@@ -126,13 +127,36 @@ def openURL(url):
 def createMaster(conList, uRL):
 	pList = MasterPlaylist()
 	for i in range(0, len(conList)):
-			pList.content.append(conList[i])
+			pList.content.append(conList[i]) #Initialize raw content
+			if '.m3u8' in conList[i]:  
+				pList.variantURLs.append(conList[i])  #Collect list of variants
+				#Before creating the variant we must open a connection to 
+				#the variant URL and retrieve contents.
+				varRsc, validURL, web = openURL(conList[i])
+				#Now if/else block for createPlaylist:
+				if web == True:
+					# Variant Resource can be loaded into an object, but must be decoded
+					logging.info("++---------->> Web variant from createMaster:")
+					varContents = varRsc.decode('utf-8')
+					print("contents =", varContents)
+					varContentList = list(varContents.splitlines())
+					#Now we have the contents of the URL
+					logging.info("++---------->> Created variant contentList of length: %s", len(varContentList))
+				else:
+					# Resource is the filehandle we got from openURL, and the lines can be read
+					logging.info("++---------->> File variant from createMaster:")
+					varContents = varRsc.read()
+					varContentList = list(varContents.split("\n"))
+					varRsc.close()
+					logging.info("++---------->> Created contentList of length: %s", len(varContentList))
+					print("contentList is: ", varContentList)
+				
+				#Now the variant object can be created and appended to the 
+				#variantList in the MasterPlaylist.
+				pList.variantList.append(createVariant(varContentList, conList[i]))
 	pList.suppliedURL = uRL
 	return pList
 	
-	#Note: eventually I will need to add other attributes
-	#regarding the Master including calls to create the
-	#variant objects using createVariant below.
 
 
 #
@@ -180,6 +204,7 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 		logging.info("++---------->> Entered createPlaylist for File URL:")
 		contents = rsrc.read()
 		contentList = list(contents.split("\n"))
+		rsrc.close()
 		logging.info("++---------->> Created contentList of length: %s", len(contentList))
 		print("contentList is: ", contentList)
 		
@@ -268,6 +293,9 @@ def main(argv):
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
+			
+			## Todo: if the user just hits the enter key, then openURL will
+			## be called and an OSError results.
 			userResponse = input("Enter the next valid URL -or- end: ")
 			if userResponse == 'end':
 				execute = False
