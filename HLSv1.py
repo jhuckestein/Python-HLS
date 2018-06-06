@@ -112,10 +112,15 @@ def openURL(url):
 		try:
 				fileHandle = open(url,'r')
 				return fileHandle, valid, web
+		except FileNotFoundError as e:
+				print("Error: ", e)
+				logging.info("++--------->> The user gave a bad File: %s", e)
+				sys.exit(1)
 		except sys.OSError as e:
 				print("Error: ", e)
 				logging.info("++---------->> openURL OSError: %s", e)
 				sys.exit(1)
+		
 
 #
 # End of openURL
@@ -293,10 +298,9 @@ def main(argv):
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
-			
-			## Todo: if the user just hits the enter key, then openURL will
-			## be called and an OSError results.
+
 			userResponse = input("Enter the next valid URL -or- end: ")
+			
 			if userResponse == 'end':
 				execute = False
 				logging.info("<<----------++ Leaving Command Line mode:")
