@@ -54,8 +54,6 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-PLAYLIST-TYPE the playlist type (LIVE, EVENT, VOD)
 	# Has a header that starts with #EXTM3U
 	# Has #EXT-X-STREAM-INF tag to indicate next URL identifies a playlist file
-	# Has #EXT-X-STREAM-INF tag which indicates BANDWIDTH attribute - 
-	# Has #EXT-X-STREAM-INF tag which should have a CODECS attribute (RFC 6381)
 	# Has #EXT-MEDIA-SEQUENCE which tells the first URL.ts that appears in the file
 	# Has #EXT-X-TARGETDURATION which specifies the maximum media file duration
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
@@ -86,13 +84,13 @@ class VariantValidator(Validator): pass
 # This class is used to create a validation report, and contains master results.
 class MasterValidationReport():
 	givenURL = ""              # Applies to every entry
-	masterContents = []        # Master
-	masterHeader = ""          # #EXTM3U on Master first line
-	properStreamBW = "" 	   # Master: #EXT-X-STREAM-INF has BANDWIDTH
-	properStreamRES = ""       # Master: #EXT-X-STREAM-INF has RESOLUTION
-	properStreamCOD = ""       # Master: #EXT-X-STREAM-INF has CODEC
-	properTSformat = ""        # Master: /URL.ts follows #EXT-X-STREAM-INF
-	properEnd = ""             # Master: /URL.ts end in .m3u8 (contains due to format variations)
+	masterContents = []        # Master list of raw content
+	masterHeader = ""          # #EXTM3U on Master first line (ERROR)
+	properStreamBW = "" 	   # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
+	properStreamRES = ""       # Master: #EXT-X-STREAM-INF has RESOLUTION (WARNING)
+	properStreamCOD = ""       # Master: #EXT-X-STREAM-INF has CODECS (WARNING)
+	properTSformat = ""        # Master: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
+	properEnd = ""             # Master: /URL.ts end in .m3u8 (contains due to format variations:ERROR) 
 	errorLines = []            # Master: Lines that have errors
 	variantList = []           # Master: List of variants in file
 	variantReportList = []     # Master: List of variant validation reports
@@ -106,16 +104,16 @@ class MasterValidationReport():
 #
 # This class is used to create a validation report, and contains variant results
 class VariantValidationReport():
-	givenURL = ""
-	variantContents = []
-	type = ""
-	variantHeader = ""          # #EXTM3U on Variant first line
-	properTSformat = ""         # Variant: /URL.ts follows #EXT-X-STREAM-INF
-	properTsEnd = ""            # Variant: URL ends in .ts (contains due to format variations)
-	properSequence = ""         # Variant: Has #EXT-MEDIA-SEQUENCE
-	properTarget = ""           # Variant: Has #EXT-X-TARGETDURATION
-	properVersion = ""          # Variant: Has #EXT-X-VERSION
-	properENDList = ""          # Variant: Has #EXT-X-ENDLIST in VOD and possibly in EVENT
+	givenURL = ""               # Applies to every playlist
+	variantContents = []        # Variant list of raw content
+	type = ""                   # Variant: #EXT-X-PLAYLIST-TYPE: EVENT,VOD,LIVE (WARNING)
+	variantHeader = ""          # #EXTM3U on Variant first line (ERROR)
+	properTSformat = ""         # Variant: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
+	properTsEnd = ""            # Variant: URL ends in .ts (contains due to format variations : ERROR))
+	properSequence = ""         # Variant: Has #EXT-MEDIA-SEQUENCE (ERROR)
+	properTarget = ""           # Variant: Has #EXT-X-TARGETDURATION (ERROR)
+	properVersion = ""          # Variant: Has #EXT-X-VERSION (WARNING)
+	properENDList = ""          # Variant: Has #EXT-X-ENDLIST in VOD (ERROR)
 	
 #
 # End of class VariantValidationReport
