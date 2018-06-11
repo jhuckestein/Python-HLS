@@ -46,8 +46,15 @@ class Playlist(object):
 	def __str__(self):
 		return self.__class__.__name__
 		
+	def checkHeader(self, visitor):
+		check = False
+		if visitor.content[0] == '#EXTM3U':
+			check = True
+		return check
+	
 	content = []         # A list of the original content of the URL
 	suppliedURL = ""	 # The URL supplied by the command line or batch file
+	master = ""   		 # True if a Master playlist, False if variant
 
 class VariantPlaylist(Playlist):
 	# Has a list of URLs to media segments (or locally defined) that end in ".ts"
@@ -58,7 +65,7 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-TARGETDURATION which specifies the maximum media file duration
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
-	type = ""
+	type = ""  # EVENT,VOD,LIVE
 	
 	
 class MasterPlaylist(Playlist):
@@ -76,8 +83,12 @@ class Visitor:
         return self.__class__.__name__
 		
 class Validator(Visitor): pass
-class MasterValidator(Validator): pass
-class VariantValidator(Validator): pass
+class MasterValidator(Validator):
+	def visit(self, pList):
+		pList.checkHeader(self)
+class VariantValidator(Validator): 
+	def visit(self, pList):
+		pList.checkHeader(self)
 
 ####################################
 #
@@ -170,6 +181,7 @@ def openURL(url):
 # This function creates MasterPlaylist objects
 def createMaster(conList, uRL):
 	pList = MasterPlaylist()
+	pList.master = True
 	for i in range(0, len(conList)):
 			pList.content.append(conList[i]) #Initialize raw content
 			if '.m3u8' in conList[i]:  
@@ -212,6 +224,7 @@ def createMaster(conList, uRL):
 # This function creates VariantPlaylist objects
 def createVariant(contenList, urL):
 	varList = VariantPlaylist()
+	varList.master = False
 	for i in range(0, len(contenList)):
 			varList.content.append(contenList[i])
 	varList.suppliedURL = urL
@@ -331,7 +344,9 @@ def main(argv):
 				print(str(i), " content =", playlist.content[i])
 			
 			
-			
+			## So, is this where I need to place a block which looks at whether
+			## playlist is a master, and call various checks depending upon the
+			## type of playlist that is encountered.
 			
 			
 			
