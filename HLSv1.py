@@ -41,15 +41,15 @@ logging.basicConfig(filename='Hlsv1.log', level=logging.DEBUG)
 class Playlist(object):
 	def accept(self, validator):
 		validator.visit(self)
-	## Other methods that act on playlist?
 		
 	def __str__(self):
 		return self.__class__.__name__
 		
-	def checkHeader(self, visitor):
+	def checkHeader(self, validator):
 		check = False
-		if visitor.content[0] == '#EXTM3U':
+		if self.content[0] == '#EXTM3U':
 			check = True
+			print("checkHeader results =", check, " ", self.content[0])
 		return check
 	
 	content = []         # A list of the original content of the URL
@@ -78,33 +78,48 @@ class MasterPlaylist(Playlist):
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
 
+
+## This is where the visitors (check hierarchy) are defined
+
 class Visitor:
     def __str__(self):
         return self.__class__.__name__
 		
 class Validator(Visitor): pass
-class MasterValidator(Validator):
+class MasterValidator(Validator): pass
+	
+class VariantValidator(Validator): pass 
+	
+		
+class headerCheck(Validator):   ## This check is universal to any playlist
 	def visit(self, pList):
-		pList.checkHeader(self)
-class VariantValidator(Validator): 
-	def visit(self, pList):
-		pList.checkHeader(self)
+		result = pList.checkHeader(self)
+		print("result inside headerCheck =", result)
+		return result
 
 ####################################
 #
 # This class is used to create a validation report, and contains master results.
 class MasterValidationReport():
-	givenURL = ""              # Applies to every entry
-	masterContents = []        # Master list of raw content
-	masterHeader = ""          # #EXTM3U on Master first line (ERROR)
-	properStreamBW = "" 	   # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
-	properStreamRES = ""       # Master: #EXT-X-STREAM-INF has RESOLUTION (WARNING)
-	properStreamCOD = ""       # Master: #EXT-X-STREAM-INF has CODECS (WARNING)
-	properTSformat = ""        # Master: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
-	properEnd = ""             # Master: /URL.ts end in .m3u8 (contains due to format variations:ERROR) 
+	
+	## Mapping schema to the dictionary:
+	#givenURL =                 # Applies to every entry
+	#masterHeader =             # #EXTM3U on Master first line (ERROR)
+	#properStreamBW = 	   	    # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
+	#properStreamRES =          # Master: #EXT-X-STREAM-INF has RESOLUTION (WARNING)
+	#properStreamCOD =          # Master: #EXT-X-STREAM-INF has CODECS (WARNING)
+	#properTSformat =           # Master: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
+	#properEnd =                # Master: /URL.ts end in .m3u8 (contains due to format variations:ERROR) 
+	
+	## Because strings are immutable, a dictionary data structure was chosen with the
+	## keys defined above
+	dict.fromkeys(['givenURL', 'masterHeader', 'properStreamBW', 'properStreamRES' \
+	              'properStreamCOD', 'properTSformat', 'properEnd'])
+	
 	errorLines = []            # Master: Lines that have errors
 	variantList = []           # Master: List of variants in file
 	variantReportList = []     # Master: List of variant validation reports
+	masterContents = []        # Master list of raw content
 
 #
 # End of ValidationReport
@@ -115,16 +130,25 @@ class MasterValidationReport():
 #
 # This class is used to create a validation report, and contains variant results
 class VariantValidationReport():
-	givenURL = ""               # Applies to every playlist
+	
+	## Mapping schema to the dictionary:
+	# givenURL = ""               # Applies to every playlist
+	# type = ""                   # Variant: #EXT-X-PLAYLIST-TYPE: EVENT,VOD,LIVE (WARNING)
+	# variantHeader = ""          # #EXTM3U on Variant first line (ERROR)
+	# properTSformat = ""         # Variant: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
+	# properTsEnd = ""            # Variant: URL ends in .ts (contains due to format variations : ERROR))
+	# properSequence = ""         # Variant: Has #EXT-MEDIA-SEQUENCE (ERROR)
+	# properTarget = ""           # Variant: Has #EXT-X-TARGETDURATION (ERROR)
+	# properVersion = ""          # Variant: Has #EXT-X-VERSION (WARNING)
+	# properENDList = ""          # Variant: Has #EXT-X-ENDLIST in VOD (ERROR)
+	
+	## Because strings are immutable, a dictionary data structure was chosen with the
+	## keys defined above
+	dict.fromkeys(['givenURL', 'type', 'variantHeader', 'properTSformat', 'properTsEnd' \
+	               'properSequence', 'properTarget', 'properVersion', properENDList'])
+	
 	variantContents = []        # Variant list of raw content
-	type = ""                   # Variant: #EXT-X-PLAYLIST-TYPE: EVENT,VOD,LIVE (WARNING)
-	variantHeader = ""          # #EXTM3U on Variant first line (ERROR)
-	properTSformat = ""         # Variant: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
-	properTsEnd = ""            # Variant: URL ends in .ts (contains due to format variations : ERROR))
-	properSequence = ""         # Variant: Has #EXT-MEDIA-SEQUENCE (ERROR)
-	properTarget = ""           # Variant: Has #EXT-X-TARGETDURATION (ERROR)
-	properVersion = ""          # Variant: Has #EXT-X-VERSION (WARNING)
-	properENDList = ""          # Variant: Has #EXT-X-ENDLIST in VOD (ERROR)
+	
 	
 #
 # End of class VariantValidationReport
@@ -348,7 +372,26 @@ def main(argv):
 			## playlist is a master, and call various checks depending upon the
 			## type of playlist that is encountered.
 			
+			#1) Case where we have a MasterPlaylist
+			if playlist.master:
+				mReport = MasterValidationReport()
+				hCheck = headerCheck()
+				
+				## Strings are immutable, so whatever it was initialized to
+				## is what it will remain.  Todo: investigate dictionaries
+				## and lists as viable data structure.
+				
+				
+				mReport.masterHeader = playlist.accept(hCheck)
+				print("Working on Master Report")
+				print("Result of headerCheck = ", mReport.masterHeader)
 			
+			#2) Case where we have a VariantPlaylist
+			else:
+				vReport = VariantValidationReport()
+				hCheck = headerCheck()
+				vReport.variantHeader = playlist.accept(hCheck)
+				print("Result of headerCheck = ", vReport.variantHeader)
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
