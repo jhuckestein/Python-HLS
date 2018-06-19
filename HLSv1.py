@@ -51,6 +51,30 @@ class Playlist(object):
 			check = True
 			#print("(52)checkHeader results =", check, " ", self.content[0])
 		return check
+		
+	def masVersion(self, validator):
+		# A playlist file must not contain more than one EXT-X-VERSION tag (ERROR)
+		# Must be 7+ if Master has SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA (ERROR)
+		# If 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF removed (WARNING)
+		# If 7+ EXT-X-ALLOW-CACHE removed
+		
+		print('We hit the line 61 check master version')
+		compatibility = False
+		multiple = False
+		
+	def varVersion(self, validator):
+		# A playlist file must not contain more than one EXT-X-VERSION tag (ERROR)
+		# Must be 2+ if IV attribute of EXT-X-KEY tag(ERROR)
+		# Must be 3+ if floating point EXTINF values (ERROR)
+		# Must be 4+ if contains EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags (ERROR)
+		# Must be 5+ if has EXT-X-MAP (ERROR)
+		# Must be 6+ if Media playlist & EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY (ERROR)
+		# If 7+ EXT-X-ALLOW-CACHE removed
+		
+		print('We hit line 74 check variant version')
+		compatibility = False
+		multiple = False
+		
 						 # Can't specify a string as it will be null, so lists were chosen
 	content = []         # A list of the original content of the URL
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
@@ -93,12 +117,19 @@ class VariantValidator(Validator): pass
 	
 		
 class headerCheck(Validator):   ## This check is universal to any playlist
-	result = False  #just initializing that result is a boolean
+	#result = False  #just initializing that result is a boolean
 	def visit(self, pList):
 		result = pList.checkHeader(self)
 		pList.checkResults.append("First line #EXTM3U= " + str(result))
 		
-		
+class versionCheck(Validator):
+	
+	def visit(self, pList):
+		if pList.master:
+			pList.masVersion(self)
+			
+		else:
+			pList.varVersion(self)
 
 ####################################
 #
@@ -383,6 +414,9 @@ def main(argv):
 				
 			hCheck = headerCheck()
 			playlist.accept(hCheck)
+			
+			vCheck = versionCheck()
+			playlist.accept(vCheck)
 
 			
 			## Here we need to print out the contents of the checks:
