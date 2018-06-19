@@ -49,7 +49,6 @@ class Playlist(object):
 		check = False
 		if self.content[0] == '#EXTM3U':
 			check = True
-			#print("(52)checkHeader results =", check, " ", self.content[0])
 		return check
 		
 	def masVersion(self, validator):
@@ -94,6 +93,7 @@ class Playlist(object):
 	content = []         # A list of the original content of the URL
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
+	#playVersion         # Integer used to store playlist version, 0 if not used
 	checkResults = []	 # Used to store the contents of check results
 
 class VariantPlaylist(Playlist):
