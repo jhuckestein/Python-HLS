@@ -53,8 +53,8 @@ class Playlist(object):
 		return check
 						 # Can't specify a string as it will be null, so lists were chosen
 	content = []         # A list of the original content of the URL
-	suppliedURL = []	 # The URL supplied by the command line or batch file
-	master = []   		 # True if a Master playlist, False if variant
+	#suppliedURL = []	 # The URL supplied by the command line or batch file
+	#master = Bool 		 # True if a Master playlist, False if variant
 	checkResults = []	 # Used to store the contents of check results
 
 class VariantPlaylist(Playlist):
@@ -96,7 +96,7 @@ class headerCheck(Validator):   ## This check is universal to any playlist
 	result = False  #just initializing that result is a boolean
 	def visit(self, pList):
 		result = pList.checkHeader(self)
-		pList.checkResults.append("First line #EXTM3U " + str(result))
+		pList.checkResults.append("First line #EXTM3U= " + str(result))
 		
 		
 
@@ -108,7 +108,7 @@ class headerCheck(Validator):   ## This check is universal to any playlist
 	# ## Mapping schema to the dictionary:
 	# #givenURL =                 # Applies to every entry
 	# #Header =                   # #EXTM3U on Master first line (ERROR)
-	# #properStreamBW = 	   	    # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
+	# #properStreamBW = 	   	  # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
 	# #properStreamRES =          # Master: #EXT-X-STREAM-INF has RESOLUTION (WARNING)
 	# #properStreamCOD =          # Master: #EXT-X-STREAM-INF has CODECS (WARNING)
 	# #properTSformat =           # Master: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
@@ -208,7 +208,7 @@ def openURL(url):
 # This function creates MasterPlaylist objects
 def createMaster(conList, uRL):
 	pList = MasterPlaylist()
-	pList.master.append(True)         #So I could just init pList.master = True
+	pList.master = True         
 	for i in range(0, len(conList)):
 			pList.content.append(conList[i]) #Initialize raw content
 			if '.m3u8' in conList[i]:  
@@ -251,10 +251,10 @@ def createMaster(conList, uRL):
 # This function creates VariantPlaylist objects
 def createVariant(contenList, urL):
 	varList = VariantPlaylist()
-	varList.master.append(False)    #Could just say varList.master = False to create/init
+	varList.master = False    
 	for i in range(0, len(contenList)):
 			varList.content.append(contenList[i])
-	varList.suppliedURL.append(urL)    #Could just say varList.suppliedURL = str(urL)
+	varList.suppliedURL = str(urL)   
 	return varList
 	
 	#Note: eventually I will need to add other attributes
@@ -375,25 +375,20 @@ def main(argv):
 			## playlist is a master, and call various checks depending upon the
 			## type of playlist that is encountered.
 			
-			#1) Case where we have a MasterPlaylist
-			if playlist.master:
-				mReport = MasterValidationReport()
-				hCheck = headerCheck()
-				
-				## This is where all of the checks go in order:
-				
-				
-				
-				playlist.accept(hCheck)
-				#print("(388)Result of header check= ", playlist.checkResults[0])
-				
+			## The visitor needs to decide what to do with the playlist, and main just 
+			## needs to call the checks.  So, the check definition in Playlist() will
+			## need to know what to do if the object is a Master or Variant.
 			
-			#2) Case where we have a VariantPlaylist
-			else:
-				vReport = VariantValidationReport()
-				hCheck = headerCheck()
-				playlist.accept(hCheck)
-				print("(396)Result of header check= ", playlist.checkResults[0])
+			## Here is where the checks go in order:
+				
+			hCheck = headerCheck()
+			playlist.accept(hCheck)
+
+			
+			## Here we need to print out the contents of the checks:
+			print('The playlist was a Master =', playlist.master)
+			print('The given URL was =', playlist.suppliedURL)
+			print(playlist.checkResults[0])
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
