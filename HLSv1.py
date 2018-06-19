@@ -126,10 +126,6 @@ class Visitor:
         return self.__class__.__name__
 		
 class Validator(Visitor): pass
-class MasterValidator(Validator): pass
-	
-class VariantValidator(Validator): pass 
-	
 		
 class headerCheck(Validator):   ## This check is universal to any playlist
 	def visit(self, pList):
