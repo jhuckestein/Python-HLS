@@ -382,9 +382,14 @@ def main(argv):
 		print ("python3.6 HLSv1.py <format: command> <valid-URL>")
 		sys.exit(-1)
 
+	print('')
+	print('')
+	print('<<------------------Program Execution---------------------->>')
 	print("++-------->> File Program:", sys.argv[0])
 	print("++-------->> File FORMAT:", sys.argv[1])
 	print("++-------->> File File/URL:", sys.argv[2])
+	print('')
+	print('')
 	logging.info("++-------->> File Program: %s", sys.argv[0])
 	logging.info("++-------->> File FORMAT: %s", sys.argv[1])
 	logging.info("++-------->> File File/URL: %s", sys.argv[2])
@@ -405,7 +410,7 @@ def main(argv):
 			#webCheck(boolean) tells wheter the URL begins with http/https
 			# 1) open the URL
 			resource, urlCheck, webCheck = openURL(url)
-			#print(resource)
+			print('<<##--------------------- Report ------------------------##>>')
 			print("The valid check for URL was: ", urlCheck)
 			
 			# 2) Create objects from the "resource"
@@ -417,9 +422,6 @@ def main(argv):
 			
 			
 			
-			## So, is this where I need to place a block which looks at whether
-			## playlist is a master, and call various checks depending upon the
-			## type of playlist that is encountered.
 			
 			## The visitor needs to decide what to do with the playlist, and main just 
 			## needs to call the checks.  So, the check definition in Playlist() will
@@ -435,10 +437,14 @@ def main(argv):
 
 			
 			## Here we need to print out the contents of the checks:
+			print('<<--------------->>')
 			print('The playlist was a Master =', playlist.master)
 			print('The given URL was =', playlist.suppliedURL)
 			for line in range(0, len(playlist.checkResults)):
 				print(playlist.checkResults[line])
+			print('<<##--------------- End of Report ---------------##>>')
+			print('')
+			print('')
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
