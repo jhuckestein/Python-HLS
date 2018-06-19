@@ -276,7 +276,6 @@ def createMaster(conList, uRL):
 					# Variant Resource can be loaded into an object, but must be decoded
 					logging.info("++---------->> Web variant from createMaster:")
 					varContents = varRsc.decode('utf-8')
-					print("contents =", varContents)
 					varContentList = list(varContents.splitlines())
 					#Now we have the contents of the URL
 					logging.info("++---------->> Created variant contentList of length: %s", len(varContentList))
@@ -287,7 +286,6 @@ def createMaster(conList, uRL):
 					varContentList = list(varContents.split("\n"))
 					varRsc.close()
 					logging.info("++---------->> Created contentList of length: %s", len(varContentList))
-					print("contentList is: ", varContentList)
 				
 				#Now the variant object can be created and appended to the 
 				#variantList in the MasterPlaylist.
@@ -333,7 +331,6 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 	# Resource can be loaded into an object, but must be decoded
 		logging.info("++---------->> Entered createPlaylist for Web URL:")
 		contents = rsrc.decode('utf-8')
-		print("contents =", contents)
 		contentList = list(contents.splitlines())
 		#Now we have the contents of the URL
 		logging.info("++---------->> Created contentList of length: %s", len(contentList))
@@ -345,7 +342,6 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 		contentList = list(contents.split("\n"))
 		rsrc.close()
 		logging.info("++---------->> Created contentList of length: %s", len(contentList))
-		print("contentList is: ", contentList)
 		
 	#Now the contentList is populated, and we need to create either a VariantPlaylist
 	#or create a MasterPlaylist.  If we iterate through the contentList, and find a
@@ -356,9 +352,7 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 	for i in range(0, len(contentList)):
 		if '.m3u8' in contentList[i]:
 			master = True
-		#print("contentList was ", str(i), ": ", contentList[i])
 	logging.info("++------------>> The playlist object was test to be Master: %s", str(master))
-	#print("Master test was: ", str(master))
 	
 	#Now we know whether the supplied resource was a Master or Variant playlist.  Next,
 	#we create the object where a MasterPlaylist will create it's own VariantPlaylist(s).
@@ -421,9 +415,6 @@ def main(argv):
 			
 			playlist = createPlaylist(resource, urlCheck, webCheck, url)
 			
-			#print out the contents of the newly created playlist for debugging
-			for i in range(0, len(playlist.content)):
-				print(str(i), " content =", playlist.content[i])
 			
 			
 			## So, is this where I need to place a block which looks at whether
