@@ -127,12 +127,12 @@ class Visitor:
 		
 class Validator(Visitor): pass
 		
-class headerCheck(Validator):   ## This check is universal to any playlist
+class HeaderCheck(Validator):   ## This check is universal to any playlist
 	def visit(self, pList):
 		result = pList.checkHeader(self)
 		pList.checkResults.append("First line #EXTM3U= " + str(result))
 		
-class versionCheck(Validator):
+class VersionCheck(Validator):
 	#This validator checks to see the number of EXT-X-VERSION tags, and extracts
 	#the version number and assigns to the playlist.
 	def visit(self, pList):
@@ -425,10 +425,10 @@ def main(argv):
 			
 			## Here is where the checks go in order:
 				
-			hCheck = headerCheck()
+			hCheck = HeaderCheck()
 			playlist.accept(hCheck)
 			
-			vCheck = versionCheck()
+			vCheck = VersionCheck()
 			playlist.accept(vCheck)
 
 			
