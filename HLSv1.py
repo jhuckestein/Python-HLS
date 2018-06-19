@@ -54,26 +54,41 @@ class Playlist(object):
 		
 	def masVersion(self, validator):
 		# A playlist file must not contain more than one EXT-X-VERSION tag (ERROR)
-		# Must be 7+ if Master has SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA (ERROR)
-		# If 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF removed (WARNING)
-		# If 7+ EXT-X-ALLOW-CACHE removed
 		
-		print('We hit the line 61 check master version')
-		compatibility = False
-		multiple = False
+		logging.info("++---------->> Beginning version check for Master object")
+		multiple = False      #boolean result for check 1)
+		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
+		version = 0           #integer for extracted version number
+		
+		for line in range(0, len(self.content)):
+			if self.content[line].startswith('#EXT-X-VERSION:'):
+				versionInstance += 1
+				version = int(self.content[line].strip('#EXT-X-VERSION:'))
+		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
+		logging.info("++---------->> Version of Master object = %s", version)
+		logging.info("++---------->> Leaving version check for Master object")
+		return multiple, version
+				
 		
 	def varVersion(self, validator):
 		# A playlist file must not contain more than one EXT-X-VERSION tag (ERROR)
-		# Must be 2+ if IV attribute of EXT-X-KEY tag(ERROR)
-		# Must be 3+ if floating point EXTINF values (ERROR)
-		# Must be 4+ if contains EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags (ERROR)
-		# Must be 5+ if has EXT-X-MAP (ERROR)
-		# Must be 6+ if Media playlist & EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY (ERROR)
-		# If 7+ EXT-X-ALLOW-CACHE removed
 		
-		print('We hit line 74 check variant version')
-		compatibility = False
-		multiple = False
+		logging.info("++---------->> Beginning version check for Variant object")
+		multiple = False      #Assumed false unless versionInstance > 1
+		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
+		version = 0           #integer for extracted version number
+		
+		for line in range(0, len(self.content)):
+			if self.content[line].startswith('#EXT-X-VERSION:'):
+				versionInstance += 1
+				version = int(self.content[line].strip('#EXT-X-VERSION:'))
+		if versionInstance > 1:
+			multiple = True
+		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
+		logging.info("++---------->> Version of Variant object = %s", version)
+		logging.info("++---------->> Leaving version check for Variant object")
+		return multiple, version
+		
 		
 						 # Can't specify a string as it will be null, so lists were chosen
 	content = []         # A list of the original content of the URL
@@ -117,19 +132,28 @@ class VariantValidator(Validator): pass
 	
 		
 class headerCheck(Validator):   ## This check is universal to any playlist
-	#result = False  #just initializing that result is a boolean
 	def visit(self, pList):
 		result = pList.checkHeader(self)
 		pList.checkResults.append("First line #EXTM3U= " + str(result))
 		
 class versionCheck(Validator):
-	
+	#This validator checks to see the number of EXT-X-VERSION tags, and extracts
+	#the version number and assigns to the playlist.
 	def visit(self, pList):
 		if pList.master:
-			pList.masVersion(self)
-			
+			test, ver = pList.masVersion(self)
+			pList.playVersion = ver      #Attribute of the object to be used for compatibility
+			if test:
+				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+			else:
+				pList.checkResults.append('EXT-X-VERSION test: Passed')
 		else:
-			pList.varVersion(self)
+			test, ver = pList.varVersion(self)
+			pList.playVersion = ver      #Attribute of the object to be used for compatibility
+			if test:
+				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+			else:
+				pList.checkResults.append('EXT-X-VERSION test: Passed')
 
 ####################################
 #
@@ -422,7 +446,8 @@ def main(argv):
 			## Here we need to print out the contents of the checks:
 			print('The playlist was a Master =', playlist.master)
 			print('The given URL was =', playlist.suppliedURL)
-			print(playlist.checkResults[0])
+			for line in range(0, len(playlist.checkResults)):
+				print(playlist.checkResults[line])
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
