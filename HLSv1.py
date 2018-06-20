@@ -112,6 +112,51 @@ class Playlist(object):
 					compCache = False
 		return compService, compProgram, compCache
 	
+	def vCompVersion(self, validator):
+		# Must be 2+ if IV attribute of EXT-X-KEY:IV tag(ERROR)
+		# Must be 3+ if floating point EXTINF values (ERROR)
+		# Must be 4+ if contains EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags (ERROR)
+		# Must be 5+ if has EXT-X-MAP (ERROR)
+		# Must be 6+ if Media playlist & EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY (ERROR)
+		# If 7+ EXT-X-ALLOW-CACHE removed
+		check2 = True  #Status of IV attribute of EXT-X-KEY:IV
+		check3 = True  #Status of floating point EXTINF values
+		check4 = True  #Status of EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY
+		check5 = True  #Status of EXT-X-MAP
+		check6 = True  #Status of EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY
+		check7 = True  #Status of EXT-X-ALLOW-CACHE removed
+		iFrames = False #True if the EXT-X-I-FRAMES-ONLY tag is found
+		
+		#Fist iterate through the list to find if certain tags exist
+		for line in range(0, len(self.content)):
+			if self.content[line].startswith('#EXT-X-I-FRAMES-ONLY'):
+				iFrames = True
+		#Now iterate through the list and make our checks
+		for line in range(0, len(self.content)):
+			if self.content[line].startswith('#EXT-X-KEY:IV'):
+				check2 = False
+			elif self.content[line].startswith('#EXTINF:'):
+				tag = self.content[line].strip('#EXTINF:')
+				if self.playVersion < 3 and '.' in tag:   #Decimals not allowed below version-3
+					if tag.find('.') < 3:    #EXTINF:<duration>,<title> and title could have period
+						check3 = False
+			elif self.content[line].startswith('#EXT-X-BYTERANGE:') and self.playVersion < 4:
+				check4 = False
+			elif self.content[line].startswith('#EXT-X-I-FRAMES-ONLY') and self.playVersion < 4:
+				check4 = False
+			elif self.content[line].startswith('#EXT-X-MAP'):
+				if iFrames:
+					if self.playVersion < 5:
+						check5 = False
+				else:
+					if self.playVersion < 6:
+						check6 = False
+			elif self.content[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
+				check7 = False
+			return check2, check3, check4, check5, check6, check7
+			
+		
+			
 	
 						 # Can't specify a string as it will be null, so lists were chosen
 	content = []         # A list of the original content of the URL
@@ -153,13 +198,20 @@ class Validator(Visitor): pass
 		
 class HeaderCheck(Validator):   ## This check is universal to any playlist
 	def visit(self, pList):
+		pList.checkResults.append("<<-----Begin Header Check----->>")
+		pList.checkResults.append('')
 		result = pList.checkHeader(self)
 		pList.checkResults.append("First line #EXTM3U= " + str(result))
+		pList.checkResults.append('')
+		pList.checkResults.append("<<-----End of Header Check----->>")
+		pList.checkResults.append('')
 		
 class VersionCheck(Validator):
 	#This validator checks to see the number of EXT-X-VERSION tags, and extracts
 	#the version number and assigns to the playlist.
 	def visit(self, pList):
+		pList.checkResults.append('<<-----Begin Version Checks----->>')
+		pList.checkResults.append('')
 		if pList.master:
 			test, ver = pList.masVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
@@ -195,9 +247,34 @@ class VerCompatCheck(Validator):
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed')
 		else:
 			#This is where the vCompVersion(self) block will be placed
-			print('This is a placeholder for Variant Version Compatibility Checks')
-		pList.checkResults.append('-')
-		pList.checkResults.append('<<---------->>')
+			compCkV2, compCkV3, compCkV4, compCkV5, compCkV6, compCkV7 = pList.vCompVersion(self)
+			if compCkV2:
+				pList.checkResults.append('PASSED: Version 2+ if EXT-X-KEY:IV tag')
+			else:
+				pList.checkResults.append('ERROR: Must be 2+ if IV attribute of EXT-X-KEY:IV tag')
+			if compCkV3:
+				pList.checkResults.append('PASSED: Version 3+ if floating point EXTINF values')
+			else:
+				pList.checkResults.append('ERROR: Must be 3+ if floating point EXTINF values')
+			if compCkV4:
+				pList.checkResults.append('PASSED: Version 4+ EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags')
+			else:
+				pList.checkResults.append('ERROR: Version 4+ using EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags')
+			if compCkV5:
+				pList.checkResults.append('PASSED: Version 5+ using EXT-X-MAP')
+			else:
+				pList.checkResults.append('ERROR: Version 5+ using EXT-X-MAP')
+			if compCkV6:
+				pList.checkResults.append('PASSED: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY')
+			else:
+				pList.checkResults.append('ERROR: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY')
+			if compCkV7:
+				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
+			else:
+				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE removed')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----End of Version Checks----->>')
+		pList.checkResults.append('')
 
 ####################################
 #
@@ -484,7 +561,7 @@ def main(argv):
 
 			
 			## Here we need to print out the contents of the checks:
-			print('<<--------------->>')
+			#print('<<--------------->>')
 			print('The playlist was a Master =', playlist.master)
 			print('The given URL was =', playlist.suppliedURL)
 			for line in range(0, len(playlist.checkResults)):
