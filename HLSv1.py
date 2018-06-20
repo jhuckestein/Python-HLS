@@ -201,7 +201,10 @@ class HeaderCheck(Validator):   ## This check is universal to any playlist
 		pList.checkResults.append("<<-----Begin Header Check----->>")
 		pList.checkResults.append('')
 		result = pList.checkHeader(self)
-		pList.checkResults.append("First line #EXTM3U= " + str(result))
+		if result:
+			pList.checkResults.append("PASSED: First line starts #EXTM3U")
+		else:
+			pList.checkResults.append("FAILED: First line starts #EXTM3U")
 		pList.checkResults.append('')
 		pList.checkResults.append("<<-----End of Header Check----->>")
 		pList.checkResults.append('')
@@ -218,7 +221,7 @@ class VersionCheck(Validator):
 			if test:
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
 			else:
-				pList.checkResults.append('EXT-X-VERSION test: Passed')
+				pList.checkResults.append('PASSED: EXT-X-VERSION test')
 		else:
 			test, ver = pList.varVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
