@@ -88,7 +88,31 @@ class Playlist(object):
 		logging.info("++---------->> Leaving version check for Variant object")
 		return multiple, version
 		
+	def mCompVersion(self, validator):
+		# 1) Must be 7+ if Master has SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA (ERROR)
+		# 2) If 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF removed (WARNING)
+		# 3) If 7+ EXT-X-ALLOW-CACHE removed
 		
+		compService = True  #Validation status for 1) - SERVICE values for INSTREAM-ID
+		compProgram = True  #Validation status for 2) - PROGRAM-ID attribute
+		compCache = True    #Validation status for 3) - EXT-X-ALLOW-CACHE
+		for line in range(0, len(self.content)):
+			if self.content[line].startswith('#EXT-X-MEDIA'):
+				if 'INSTREAM-ID' and 'SERVICE' in self.content[line]:
+					if self.playVersion < 7:
+						compService = False
+			elif self.content[line].startswith('#EXT-X-STREAM-INF'):
+				if self.playVersion < 6 and 'PROGRAM-ID' in self.content[line]:
+					compProgram = False
+			elif self.content[line].startswith('#EXT-X-I-FRAME-STREAM-INF'):
+				if self.playVersion < 6 and 'PROGRAM-ID' in self.content[line]:
+					compProgram = False
+			elif self.playVersion >= 7:
+				if 'EXT-X-ALLOW-CACHE' in self.content[line]:
+					compCache = False
+		return compService, compProgram, compCache
+	
+	
 						 # Can't specify a string as it will be null, so lists were chosen
 	content = []         # A list of the original content of the URL
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
@@ -150,6 +174,30 @@ class VersionCheck(Validator):
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
 			else:
 				pList.checkResults.append('EXT-X-VERSION test: Passed')
+				
+class VerCompatCheck(Validator):
+	#This validator checks the version number against the inclusion/exclusion of certain tags
+	def visit(self, pList):
+		if pList.master:
+			compatService, compatProgram, compatCache = pList.mCompVersion(self)
+			if compatService:
+				pList.checkResults.append('PASSED: SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA')
+			else:
+				pList.checkResults.append('ERROR: Version must be 7+ for SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA')
+			if compatProgram:
+				pList.checkResults.append('PASSED: PROGRAM-ID attribute for EXT-X-STREAM-INF removed')
+				pList.checkResults.append('PASSED: PROGRAM-ID attribute for EXT-X-I-FRAME-STREAM-INF removed')
+			else:
+				pList.checkResults.append('WARNING: Version 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF are removed')
+			if compatCache:
+				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
+			else:
+				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed')
+		else:
+			#This is where the vCompVersion(self) block will be placed
+			print('This is a placeholder for Variant Version Compatibility Checks')
+		pList.checkResults.append('-')
+		pList.checkResults.append('<<---------->>')
 
 ####################################
 #
@@ -430,6 +478,9 @@ def main(argv):
 			
 			vCheck = VersionCheck()
 			playlist.accept(vCheck)
+			
+			vCompCheck = VerCompatCheck()
+			playlist.accept(vCompCheck)
 
 			
 			## Here we need to print out the contents of the checks:
