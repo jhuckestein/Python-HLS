@@ -345,15 +345,25 @@ def openURL(url):
 	if url.endswith(".m3u8"):
 			logging.info("++---------->> openURL Valid(m3u8) YES")
 			valid = True
+	elif url.endswith(".m3u"):
+			logging.info("++---------->> openURL Valid(m3u) YES")
+			valid = True
 	else:
-		logging.info("++---------->> openURL Valid(m3u8) NO")
+		logging.info("++---------->> openURL Valid(m3u8/m3u) NO")
 		valid = False
 	# If the given url starts with http:// then process as a web site
 	web = False
 	if url.startswith("http://") or url.startswith("https://"):
+		logging.info("++---------->> Attempting openURL using http")
 		try:
 			response = requests.get(url)
 			response.raise_for_status()
+			if response.headers.get('content-type') == 'application/vnd.apple.mpegurl':
+				valid = True
+				logging.info("++---------->> openURL Valid via content-type= application/vnd.apple.mpegurl")
+			elif response.headers.get('content-type') == 'audio/mpegurl':
+				valid = True
+				logging.info("++---------->> openURL Valid via content-type= audio/mpegurl")
 			output = response.text.encode('ascii', 'ignore')
 			web = True
 			logging.info("++---------->> openURL: %s", url)
