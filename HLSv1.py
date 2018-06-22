@@ -47,8 +47,12 @@ class Playlist(object):
 		
 	def checkHeader(self, validator):
 		check = False
-		if self.content[0] == '#EXTM3U':
-			check = True
+		if self.master:
+			if self.mContent[0] == '#EXTM3U':
+				check = True
+		else:
+			if self.vContent[0] == '#EXTM3U':
+				check = True
 		return check
 		
 	def masVersion(self, validator):
@@ -59,10 +63,10 @@ class Playlist(object):
 		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
 		version = 0           #integer for extracted version number
 		
-		for line in range(0, len(self.content)):
-			if self.content[line].startswith('#EXT-X-VERSION:'):
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
-				version = int(self.content[line].strip('#EXT-X-VERSION:'))
+				version = int(self.mContent[line].strip('#EXT-X-VERSION:'))
 		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
 		logging.info("++---------->> Version of Master object = %s", version)
 		logging.info("++---------->> Leaving version check for Master object")
@@ -77,10 +81,10 @@ class Playlist(object):
 		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
 		version = 0           #integer for extracted version number
 		
-		for line in range(0, len(self.content)):
-			if self.content[line].startswith('#EXT-X-VERSION:'):
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
-				version = int(self.content[line].strip('#EXT-X-VERSION:'))
+				version = int(self.vContent[line].strip('#EXT-X-VERSION:'))
 		if versionInstance > 1:
 			multiple = True
 		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
@@ -96,19 +100,19 @@ class Playlist(object):
 		compService = True  #Validation status for 1) - SERVICE values for INSTREAM-ID
 		compProgram = True  #Validation status for 2) - PROGRAM-ID attribute
 		compCache = True    #Validation status for 3) - EXT-X-ALLOW-CACHE
-		for line in range(0, len(self.content)):
-			if self.content[line].startswith('#EXT-X-MEDIA'):
-				if 'INSTREAM-ID' and 'SERVICE' in self.content[line]:
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-MEDIA'):
+				if 'INSTREAM-ID' and 'SERVICE' in self.mContent[line]:
 					if self.playVersion < 7:
 						compService = False
-			elif self.content[line].startswith('#EXT-X-STREAM-INF'):
-				if self.playVersion < 6 and 'PROGRAM-ID' in self.content[line]:
+			elif self.mContent[line].startswith('#EXT-X-STREAM-INF'):
+				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
-			elif self.content[line].startswith('#EXT-X-I-FRAME-STREAM-INF'):
-				if self.playVersion < 6 and 'PROGRAM-ID' in self.content[line]:
+			elif self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF'):
+				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
 			elif self.playVersion >= 7:
-				if 'EXT-X-ALLOW-CACHE' in self.content[line]:
+				if 'EXT-X-ALLOW-CACHE' in self.mContent[line]:
 					compCache = False
 		return compService, compProgram, compCache
 	
@@ -128,30 +132,30 @@ class Playlist(object):
 		iFrames = False #True if the EXT-X-I-FRAMES-ONLY tag is found
 		
 		#Fist iterate through the list to find if certain tags exist
-		for line in range(0, len(self.content)):
-			if self.content[line].startswith('#EXT-X-I-FRAMES-ONLY'):
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY'):
 				iFrames = True
 		#Now iterate through the list and make our checks
-		for line in range(0, len(self.content)):
-			if self.content[line].startswith('#EXT-X-KEY:IV'):
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-KEY:IV'):
 				check2 = False
-			elif self.content[line].startswith('#EXTINF:'):
-				tag = self.content[line].strip('#EXTINF:')
+			elif self.vContent[line].startswith('#EXTINF:'):
+				tag = self.vContent[line].strip('#EXTINF:')
 				if self.playVersion < 3 and '.' in tag:   #Decimals not allowed below version-3
 					if tag.find('.') < 3:    #EXTINF:<duration>,<title> and title could have period
 						check3 = False
-			elif self.content[line].startswith('#EXT-X-BYTERANGE:') and self.playVersion < 4:
+			elif self.vContent[line].startswith('#EXT-X-BYTERANGE:') and self.playVersion < 4:
 				check4 = False
-			elif self.content[line].startswith('#EXT-X-I-FRAMES-ONLY') and self.playVersion < 4:
+			elif self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY') and self.playVersion < 4:
 				check4 = False
-			elif self.content[line].startswith('#EXT-X-MAP'):
+			elif self.vContent[line].startswith('#EXT-X-MAP'):
 				if iFrames:
 					if self.playVersion < 5:
 						check5 = False
 				else:
 					if self.playVersion < 6:
 						check6 = False
-			elif self.content[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
+			elif self.vContent[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
 				check7 = False
 			return check2, check3, check4, check5, check6, check7
 			
@@ -159,7 +163,7 @@ class Playlist(object):
 			
 	
 						 # Can't specify a string as it will be null, so lists were chosen
-	content = []         # A list of the original content of the URL
+	#content = []         # A list of the original content of the URL
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
 	#playVersion         # Integer used to store playlist version, 0 if not used
@@ -175,6 +179,7 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
 	type = []  # EVENT,VOD,LIVE
+	vContent = []
 	
 	
 class MasterPlaylist(Playlist):
@@ -186,6 +191,7 @@ class MasterPlaylist(Playlist):
 	
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
+	mContent = []
 
 
 ## This is where the visitors (check hierarchy) are defined
@@ -198,17 +204,43 @@ class Validator(Visitor): pass
 		
 class HeaderCheck(Validator):   ## This check is universal to any playlist
 	def visit(self, pList):
-		pList.checkResults.append("<<-----Begin Header Check----->>")
-		pList.checkResults.append('')
-		result = pList.checkHeader(self)
-		if result:
-			pList.checkResults.append("PASSED: First line starts #EXTM3U")
+		logging.info("++---------->> Beginning HeaderCheck Validation")
+		if pList.master:
+			logging.info("++--------------->> HeaderCheck Master Object")
+			pList.checkResults.append("<<-----Begin Master Header Check----->>")
+			pList.checkResults.append('')
+			result = pList.checkHeader(self)
+			if result:
+				pList.checkResults.append("PASSED: First line starts #EXTM3U")
+			else:
+				pList.checkResults.append("FAILED: First line starts #EXTM3U")
+			pList.checkResults.append('')
+			pList.checkResults.append("<<-----End of Header Check----->>")
+			pList.checkResults.append('')
+			#Now we need to call HeaderCheck for all the Variant objects in pList.variantList
+			for variant in range(0, len(pList.variantList)):
+				#for i in range(0, len(pList.variantList[variant].vContent)):
+					#print(pList.variantList[variant].vContent[i])
+				vHCheck = HeaderCheck()
+				nr = pList.variantList[variant].accept(vHCheck)
+				print('Result of variant check = ', nr)
 		else:
-			pList.checkResults.append("FAILED: First line starts #EXTM3U")
-		pList.checkResults.append('')
-		pList.checkResults.append("<<-----End of Header Check----->>")
-		pList.checkResults.append('')
-		
+			#In the event that a Master Playlist calls the for loop above, 
+			logging.info("++--------------->> HeaderCheck Variant Object")
+			pList.checkResults.append("<<-----Begin Media Header Check----->>")
+			pList.checkResults.append('')
+			pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
+			result = pList.checkHeader(self)
+			if result:
+				pList.checkResults.append("PASSED: First line starts #EXTM3U")
+			else:
+				pList.checkResults.append("FAILED: First line starts #EXTM3U")
+			pList.checkResults.append('')
+			pList.checkResults.append("<<-----End of Header Check----->>")
+			pList.checkResults.append('')
+		logging.info("++---------->> Leaving HeaderCheck Validation")
+			
+			
 class VersionCheck(Validator):
 	#This validator checks to see the number of EXT-X-VERSION tags, and extracts
 	#the version number and assigns to the playlist.
@@ -248,8 +280,7 @@ class VerCompatCheck(Validator):
 				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
 			else:
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed')
-		else:
-			#This is where the vCompVersion(self) block will be placed
+		else:   #Case where we have a Variant Playlist
 			compCkV2, compCkV3, compCkV4, compCkV5, compCkV6, compCkV7 = pList.vCompVersion(self)
 			if compCkV2:
 				pList.checkResults.append('PASSED: Version 2+ if EXT-X-KEY:IV tag')
@@ -341,6 +372,11 @@ class VerCompatCheck(Validator):
 #
 # This function is used to open a URL or file
 def openURL(url):
+	# valid = whether the URL given is in a valid format to access
+	# web = keeps track of whether we have a web/URL or file/URL (local)
+	# output is returned if it is a web/URL and fileHandle is returned if a file
+	logging.info("++----------------------------------->> Entering openURL")
+	logging.info("++---------->> Passed in URL: %s", url)
 	# First test if the url has a valid extension .m3u8
 	if url.endswith(".m3u8"):
 			logging.info("++---------->> openURL Valid(m3u8) YES")
@@ -367,6 +403,9 @@ def openURL(url):
 			output = response.text.encode('ascii', 'ignore')
 			web = True
 			logging.info("++---------->> openURL: %s", url)
+			logging.info("++---------->> The returned output= %s", output)
+			logging.info("++---------->> The returned valid= %s", valid)
+			logging.info("++---------->> The returned web= %s", web)
 			return output, valid, web
 		except requests.exceptions.HTTPError as e:
 			print ("Error: ", e)
@@ -376,16 +415,20 @@ def openURL(url):
 	# url is a local file so we will open with filehandle
 	else:
 		try:
-				fileHandle = open(url,'r')
-				return fileHandle, valid, web
+			logging.info("++---------->> Attempting openURL using file-handle")
+			fileHandle = open(url,'r')
+			logging.info("++---------->> The returned file handle= %s", fileHandle)
+			logging.info("++---------->> The returned valid= %s", valid)
+			logging.info("++---------->> The returned web= %s", web)
+			return fileHandle, valid, web
 		except FileNotFoundError as e:
-				print("Error: ", e)
-				logging.info("++--------->> The user gave a bad File: %s", e)
-				sys.exit(1)
+			print("Error: ", e)
+			logging.info("++--------->> The user gave a bad File: %s", e)
+			sys.exit(1)
 		except sys.OSError as e:
-				print("Error: ", e)
-				logging.info("++---------->> openURL OSError: %s", e)
-				sys.exit(1)
+			print("Error: ", e)
+			logging.info("++---------->> openURL OSError: %s", e)
+			sys.exit(1)
 		
 
 #
@@ -396,35 +439,61 @@ def openURL(url):
 #
 # This function creates MasterPlaylist objects
 def createMaster(conList, uRL):
+	logging.info("++------------------------->> Entering createMaster")
+	logging.info("++--------------->> Master URL: %s", uRL)
 	pList = MasterPlaylist()
-	pList.master = True         
+	pList.master = True
+	pList.suppliedURL = uRL
 	for i in range(0, len(conList)):
-			pList.content.append(conList[i]) #Initialize raw content
-			if '.m3u8' in conList[i]:  
-				pList.variantURLs.append(conList[i])  #Collect list of variants
-				#Before creating the variant we must open a connection to 
-				#the variant URL and retrieve contents.
-				varRsc, validURL, web = openURL(conList[i])
-				#Now if/else block for createPlaylist:
-				if web == True:
-					# Variant Resource can be loaded into an object, but must be decoded
-					logging.info("++---------->> Web variant from createMaster:")
-					varContents = varRsc.decode('utf-8')
-					varContentList = list(varContents.splitlines())
-					#Now we have the contents of the URL
-					logging.info("++---------->> Created variant contentList of length: %s", len(varContentList))
-				else:
-					# Resource is the filehandle we got from openURL, and the lines can be read
-					logging.info("++---------->> File variant from createMaster:")
-					varContents = varRsc.read()
-					varContentList = list(varContents.split("\n"))
-					varRsc.close()
-					logging.info("++---------->> Created contentList of length: %s", len(varContentList))
-				
-				#Now the variant object can be created and appended to the 
-				#variantList in the MasterPlaylist.
-				pList.variantList.append(createVariant(varContentList, conList[i]))
-	pList.suppliedURL = str(uRL)     
+		pList.mContent.append(conList[i]) #Initialize raw content in Master.content[]
+	for i in range(0, len(pList.mContent)):
+		#logging to verify the Master object has the correct content
+		logging.info("++---------->> pList.content = %s", pList.mContent[i])
+	for i in range(0, len(conList)):
+		if '.m3u8' in conList[i]:  
+			logging.info("++---------->> Found variant %s", conList[i])
+			pList.variantURLs.append(conList[i])  #Collect list of variants
+			#Before creating the variant we must open a connection to 
+			#the variant URL and retrieve contents.
+	for j in range(0, len(pList.variantURLs)):
+		logging.info("++---------->> pList variantURLs: %s", pList.variantURLs[j])
+	for i in range(0, len(pList.variantURLs)):		
+		varRsc, validURL, web = openURL(pList.variantURLs[i])
+		#Now if/else block for createPlaylist:
+		if web == True:
+			# Variant Resource can be loaded into an object, but must be decoded
+			logging.info("++---------->> Web variant from createMaster:")
+			varContents = varRsc.decode('utf-8')
+			varContentList = list(varContents.splitlines())
+			#Now we have the contents of the URL
+			logging.info("++---------->> Created variant contentList of length: %s", len(varContentList))
+			for k in range(0, len(varContentList)):
+				logging.info("++---------->> varContentList: %s", varContentList[k])
+			newVariant = createVariant(varContentList, pList.variantURLs[i])
+			for z in range(0, len(newVariant.vContent)):
+				logging.info("++---------->> newVariant vContent: %s", newVariant.vContent[z])
+			pList.variantList.insert(i,newVariant)
+		else:
+			# Resource is the filehandle we got from openURL, and the lines can be read
+			logging.info("++---------->> File variant from createMaster:")
+			varContents = varRsc.read()
+			varContentList = list(varContents.split("\n"))
+			varRsc.close()
+			logging.info("++---------->> Created contentList of length: %s", len(varContentList))
+			for l in range(0, len(varContentList)):
+				logging.info("++---------->> varContentList: %s", varContentList[l])
+			newVariant = createVariant(varContentList, pList.variantURLs[i])
+			for z in range(0, len(newVariant.vContent)):
+				logging.info("++---------->> newVariant vContent: %s", newVariant.vContent[z])
+			pList.variantList.insert(i,newVariant)
+	for i in range(0, len(pList.variantList)):
+		logging.info("++---------->> contents of pList.variantList: %s", pList.variantList[i])
+	for j in range(0, len(pList.variantList)):
+		logging.info("++---------->> variantObject: %s", j)
+		variantObject = pList.variantList[j]
+		for k in range(0, len(variantObject.vContent)):
+			logging.info("++---------->> variantObject contents: %s", variantObject.vContent[k])
+	logging.info("++------------------------->> Leaving createMaster")
 	return pList
 	
 
@@ -437,11 +506,19 @@ def createMaster(conList, uRL):
 #
 # This function creates VariantPlaylist objects
 def createVariant(contenList, urL):
+	logging.info("++------------------------->> Entering createVariant")
+	logging.info("++--------------->> Handed-in URL: %s", urL)
 	varList = VariantPlaylist()
-	varList.master = False    
+	varList.master = False
+	varList.vContent = []
 	for i in range(0, len(contenList)):
-			varList.content.append(contenList[i])
-	varList.suppliedURL = str(urL)   
+		logging.info("++--------------->> Adding contents: %s", contenList[i])
+		varList.vContent.append(contenList[i])
+	for i in range(0, len(varList.vContent)):
+		logging.info("++--------------->> Variant contents: %s", varList.vContent[i])
+	varList.suppliedURL = str(urL)
+	logging.info("++--------------->> Setting varURL: %s", varList.suppliedURL)
+	logging.info("++------------------------->> Leaving createVariant")
 	return varList
 	
 	#Note: eventually I will need to add other attributes
@@ -460,7 +537,7 @@ def createVariant(contenList, urL):
 # This function creates both types.
 #
 def createPlaylist(rsrc, urlFlag, webFlag, URL):
-	
+	logging.info("++------------------------->> Entering createPlaylist")
 	if webFlag == True:
 	# Resource can be loaded into an object, but must be decoded
 		logging.info("++---------->> Entered createPlaylist for Web URL:")
@@ -486,16 +563,22 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 	for i in range(0, len(contentList)):
 		if '.m3u8' in contentList[i]:
 			master = True
-	logging.info("++------------>> The playlist object was test to be Master: %s", str(master))
+	logging.info("++------------>> The playlist object was tested to be Master: %s", str(master))
 	
 	#Now we know whether the supplied resource was a Master or Variant playlist.  Next,
 	#we create the object where a MasterPlaylist will create it's own VariantPlaylist(s).
 	
 	if master:
+		logging.info("++--------------->> Master contentList")
+		for i in range(0, len(contentList)):
+			logging.info("++--------------->> contentList:" + contentList[i])
 		playList = createMaster(contentList, URL)
 	else:
+		logging.info("++--------------->> Variant contentList")
+		for i in range(0, len(contentList)):
+			logging.info("++--------------->> contentList:" + contentList[i])
 		playList = createVariant(contentList, URL)
-		
+	logging.info("++------------------------->> Leaving createPlaylist")
 	return playList
 		
 		
@@ -540,7 +623,8 @@ def main(argv):
 		while execute:
 			#Here is where the command line interaction goes.
 			#It finishes up with a command line call to the user.
-			#urlCheck(boolean) tells whether the given URL ends with .m3u8
+			#urlCheck(boolean) tells whether the given URL is tagged with a valid format, and
+			#if this check fails the player has the right to reject the playlist.
 			#webCheck(boolean) tells wheter the URL begins with http/https
 			# 1) open the URL
 			resource, urlCheck, webCheck = openURL(url)
@@ -559,7 +643,7 @@ def main(argv):
 			
 			## The visitor needs to decide what to do with the playlist, and main just 
 			## needs to call the checks.  So, the check definition in Playlist() will
-			## need to know what to do if the object is a Master or Variant.
+			## be different if the object is a Master or Variant.
 			
 			## Here is where the checks go in order:
 				
@@ -579,6 +663,13 @@ def main(argv):
 			print('The given URL was =', playlist.suppliedURL)
 			for line in range(0, len(playlist.checkResults)):
 				print(playlist.checkResults[line])
+			# This print block is not needed, because the CheckHeader is validating the
+			# variants correctly, but saving the results to the Master.checkResults[] -
+			# though I am not sure why.  I suspect it has something to do with visitor pattern.
+			# if playlist.master:
+				# for variant in range(0, len(playlist.variantList)):
+					# for l in range(0, len(variant.checkResults)):
+						# print(variant.checkResults[l])
 			print('<<##--------------- End of Report ---------------##>>')
 			print('')
 			print('')
