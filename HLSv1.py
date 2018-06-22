@@ -223,7 +223,7 @@ class HeaderCheck(Validator):   ## This check is universal to any playlist
 					#print(pList.variantList[variant].vContent[i])
 				vHCheck = HeaderCheck()
 				nr = pList.variantList[variant].accept(vHCheck)
-				print('Result of variant check = ', nr)
+				#print('Result of variant check = ', nr)
 		else:
 			#In the event that a Master Playlist calls the for loop above, 
 			logging.info("++--------------->> HeaderCheck Variant Object")
@@ -443,6 +443,7 @@ def createMaster(conList, uRL):
 	logging.info("++--------------->> Master URL: %s", uRL)
 	pList = MasterPlaylist()
 	pList.master = True
+	pList.mContent = []
 	pList.suppliedURL = uRL
 	for i in range(0, len(conList)):
 		pList.mContent.append(conList[i]) #Initialize raw content in Master.content[]
