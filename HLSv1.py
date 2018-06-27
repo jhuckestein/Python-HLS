@@ -97,6 +97,7 @@ class Playlist(object):
 		# 2) If 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF removed (WARNING)
 		# 3) If 7+ EXT-X-ALLOW-CACHE removed
 		
+		logging.info("++------------------------------>> Entering mCompVersion")
 		compService = True  #Validation status for 1) - SERVICE values for INSTREAM-ID
 		compProgram = True  #Validation status for 2) - PROGRAM-ID attribute
 		compCache = True    #Validation status for 3) - EXT-X-ALLOW-CACHE
@@ -114,6 +115,7 @@ class Playlist(object):
 			elif self.playVersion >= 7:
 				if 'EXT-X-ALLOW-CACHE' in self.mContent[line]:
 					compCache = False
+		logging.info("++------------------------------>> Leaving mCompVersion")
 		return compService, compProgram, compCache
 	
 	def vCompVersion(self, validator):
@@ -123,6 +125,7 @@ class Playlist(object):
 		# Must be 5+ if has EXT-X-MAP (ERROR)
 		# Must be 6+ if Media playlist & EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY (ERROR)
 		# If 7+ EXT-X-ALLOW-CACHE removed
+		logging.info("++------------------------------>> Entering vCompVersion")
 		check2 = True  #Status of IV attribute of EXT-X-KEY:IV
 		check3 = True  #Status of floating point EXTINF values
 		check4 = True  #Status of EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY
@@ -157,6 +160,7 @@ class Playlist(object):
 						check6 = False
 			elif self.vContent[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
 				check7 = False
+			logging.info("++------------------------------>> Leaving vCompVersion")
 			return check2, check3, check4, check5, check6, check7
 			
 		
@@ -260,7 +264,7 @@ class VersionCheck(Validator):
 				pList.checkResults.append('PASSED: EXT-X-VERSION test')
 				pList.checkResults.append('VERSION = ' + str(ver))
 				logging.info("++---------->> HeaderCheck Master Validation PASSED: " + str(pList.playVersion))
-			#Now, the version of the variantList contents need to be version checked
+			#Now, the version of the variantList contents need to be checked
 			for variant in range(0, len(pList.variantList)):
 				verCheck = VersionCheck()
 				pList.variantList[variant].accept(verCheck)
@@ -276,12 +280,22 @@ class VersionCheck(Validator):
 				pList.checkResults.append('EXT-X-VERSION test: Passed')
 				pList.checkResults.append('VERSION = ' + str(ver))
 				logging.info("++---------->> HeaderCheck Variant Validation PASSED: " + str(pList.playVersion))
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----End of Version Checks----->>')
 				
 class VerCompatCheck(Validator):
 	#This validator checks the version number against the inclusion/exclusion of certain tags
 	def visit(self, pList):
+		logging.info("++------------------------->> Beginning Version Compatibility Check Validation")
+		pList.checkResults.append('<<-----Begin Compatibility Checks----->>')
+		pList.checkResults.append('')
 		if pList.master:
 			compatService, compatProgram, compatCache = pList.mCompVersion(self)
+			logging.info("++---------->> Master Version Compatibility Check")
+			logging.info("++---------->> Master compatService = %s", compatService)
+			logging.info("++---------->> Master compatProgram = %s", compatProgram)
+			logging.info("++---------->> Master compatCache = %s", compatCache)
+			pList.checkResults.append('Master Version Compatibility Checks for ' + pList.suppliedURL)
 			if compatService:
 				pList.checkResults.append('PASSED: SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA')
 			else:
@@ -295,8 +309,20 @@ class VerCompatCheck(Validator):
 				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
 			else:
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed')
+			#Now, the contents of the variantList need to be version compatibility checked
+			for variant in range(0, len(pList.variantList)):
+				versCheck = VerCompatCheck()
+				pList.variantList[variant].accept(versCheck)
 		else:   #Case where we have a Variant Playlist
 			compCkV2, compCkV3, compCkV4, compCkV5, compCkV6, compCkV7 = pList.vCompVersion(self)
+			logging.info("++---------->> Variant Version Compatibility Check")
+			logging.info("++---------->> Variant compCkV2 = %s", compCkV2)
+			logging.info("++---------->> Variant compCkV3 = %s", compCkV3)
+			logging.info("++---------->> Variant compCkV4 = %s", compCkV4)
+			logging.info("++---------->> Variant compCkV5 = %s", compCkV5)
+			logging.info("++---------->> Variant compCkV6 = %s", compCkV6)
+			logging.info("++---------->> Variant compCkV7 = %s", compCkV7)
+			pList.checkResults.append('Variant Version Compatibility Checks for ' + pList.suppliedURL)
 			if compCkV2:
 				pList.checkResults.append('PASSED: Version 2+ if EXT-X-KEY:IV tag')
 			else:
@@ -322,7 +348,7 @@ class VerCompatCheck(Validator):
 			else:
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE removed')
 		pList.checkResults.append('')
-		pList.checkResults.append('<<-----End of Version Checks----->>')
+		pList.checkResults.append('<<-----End of Compatibility Checks----->>')
 		pList.checkResults.append('')
 
 ####################################
