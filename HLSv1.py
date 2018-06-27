@@ -245,22 +245,37 @@ class VersionCheck(Validator):
 	#This validator checks to see the number of EXT-X-VERSION tags, and extracts
 	#the version number and assigns to the playlist.
 	def visit(self, pList):
+		logging.info("++------------------------->> Beginning VersionCheck Validation")
 		pList.checkResults.append('<<-----Begin Version Checks----->>')
 		pList.checkResults.append('')
 		if pList.master:
 			test, ver = pList.masVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
 			if test:
+				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+				logging.info("++---------->> HeaderCheck Master Validation FAILED")
 			else:
+				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('PASSED: EXT-X-VERSION test')
+				pList.checkResults.append('VERSION = ' + str(ver))
+				logging.info("++---------->> HeaderCheck Master Validation PASSED: " + str(pList.playVersion))
+			#Now, the version of the variantList contents need to be version checked
+			for variant in range(0, len(pList.variantList)):
+				verCheck = VersionCheck()
+				pList.variantList[variant].accept(verCheck)
 		else:
 			test, ver = pList.varVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
 			if test:
+				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+				logging.info("++---------->> HeaderCheck Variant Validation FAILED")
 			else:
+				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Passed')
+				pList.checkResults.append('VERSION = ' + str(ver))
+				logging.info("++---------->> HeaderCheck Variant Validation PASSED: " + str(pList.playVersion))
 				
 class VerCompatCheck(Validator):
 	#This validator checks the version number against the inclusion/exclusion of certain tags
