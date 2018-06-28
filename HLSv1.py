@@ -754,6 +754,9 @@ def main(argv):
 			
 			vCompCheck = VerCompatCheck()
 			playlist.accept(vCompCheck)
+			
+			mixCheck = MixTagsCheck()
+			playlist.accept(mixCheck)
 
 			
 			## Here we need to print out the contents of the checks:
