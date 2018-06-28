@@ -384,7 +384,30 @@ class VerCompatCheck(Validator):
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----End of Compatibility Checks----->>')
 		pList.checkResults.append('')
-
+		
+class MixTagsCheck(Validator):
+	#This Validator checks to see if Variant/Media tags are in a Master Playlist and vice versa
+	def visit(self, pList):
+		logging.info("++------------------------->> Mixed Tag Validation")
+		pList.checkResults.append('<<-----Mixed Tags Checks----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			test = pList.mMixCheck(self)
+			if test:
+				pList.checkResults.append('<<----- FAILED: Master Playlist contains Media/Variant tags ')
+			else:
+				pList.checkResults.append('<<----- PASSED: Master Playlist only contains Master tags ')
+		else:
+			test = pList.vMixCheck(self)
+			if test:
+				pList.checkResults.append('<<----- FAILED: Media/Variant Playlist contains Master tags ')
+			else:
+				pList.checkResults.append('<<----- PASSED: Media/Variant only contains Media/Variant tags ')
+		
+		
+		
+		
+		
 ####################################
 #
 # This class is used to create a validation report, and contains master results.
