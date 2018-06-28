@@ -163,8 +163,42 @@ class Playlist(object):
 			logging.info("++------------------------------>> Leaving vCompVersion")
 			return check2, check3, check4, check5, check6, check7
 			
-		
+	def mMixCheck(self, validator):
+	#This check determines if Master Playlists contain Media or Variant tags
+		logging.info("++------------------------------>> Entering mMixCheck")
+		mixedTags = False
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXTINF:') or self.mContent[line].startswith('#EXT-X-BYTERANGE:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY:') or self.mContent[line].startswith('#EXT-X-KEY:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('EXT-X-MAP:') or self.mContent[line].startswith('#EXT-X-PROGRAM-DATE-TIME:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('#EXT-X-DATERANGE:') or self.mContent[line].startswith('#EXT-X-TARGETDURATION:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('#EXT-X-MEDIA-SEQUENCE:') or self.mContent[line].startswith('#EXT-X-ENDLIST:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('#EXT-X-PLAYLIST-TYPE:') or self.mContent[line].startswith('#EXT-X-I-FRAMES-ONLY:'):
+				mixedTags = True
+			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY-SEQUENCE:'):
+				mixedTags = True
+		return mixedTags
+		logging.info("++------------------------------>> Exiting  mMixCheck")
 			
+	def vMixCheck(self, validator):
+	#This check determines if Variant/Media playlists contain Master tags
+		logging.info("++------------------------------>> Entering vMixCheck")
+		mixedTags = False
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-MEDIA:') or self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
+				mixedTags = True
+			if self.vContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:') or self.vContent[line].startswith('#EXT-X-SESSION-DATA:'):
+				mixedTags = True
+			if self.vContent[line].startswith('#EXT-X-SESSION-KEY:'):
+				mixedTags = True
+		return mixedTags
+		logging.info("++------------------------------>> Exiting  vMixCheck")
+	
 	
 						 # Can't specify a string as it will be null, so lists were chosen
 	#content = []         # A list of the original content of the URL
