@@ -219,8 +219,8 @@ class Playlist(object):
 	#This is a violation, and an ERROR.
 		logging.info("++----------------------------->> Entering vStreamInf")
 		checkV = False
-		for line in range(0, len(self.mContent)):
-			if self.mContent[line].startswith('#EXT-X-STREAM-INF:'):
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
 				checkV = True
 		logging.info("++----------------------------->> Exiting vStreamInf")
 		return checkV
@@ -439,7 +439,7 @@ class StreamInfCheck(Validator):
 		pList.checkResults.append('<<-----EXT-X-STREAM-INF Tag Checks----->>')
 		pList.checkResults.append('')
 		if pList.master:
-			resultLine, resultBW = mStreamInf(self)
+			resultLine, resultBW = pList.mStreamInf(self)
 			if resultLine:
 				pList.checkResults.append('<<----- FAILED: Master> EXT-X-STREAM-INF tag not followed by URI')
 			else:
@@ -449,7 +449,7 @@ class StreamInfCheck(Validator):
 			else:
 				pList.checkResults.append('<<----- FAILED: BANDWIDTH attribute missing in tag')
 		else:
-			resultTag - vStreamInf(self)
+			resultTag = pList.vStreamInf(self)
 			if resultTag:
 				pList.checkResults.append('<<----- FAILED: Variant> contains EXT-X-STREAM-INF tag')
 		
@@ -802,6 +802,9 @@ def main(argv):
 			
 			mixCheck = MixTagsCheck()
 			playlist.accept(mixCheck)
+			
+			streamInf = StreamInfCheck()
+			playlist.accept(streamInf)
 
 			
 			## Here we need to print out the contents of the checks:
