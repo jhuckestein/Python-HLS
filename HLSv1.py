@@ -211,7 +211,21 @@ class Playlist(object):
 					bwAttr = False
 				if  not self.mContent[line + 1].endswith('.m3u8'):
 					nextLine = True
+		logging.info("++----------------------------->> Exiting mStreamInf")
 		return nextLine, bwAttr
+		
+	def vStreamInf(self, validator):
+	#This check looks to see if the EXT-X-STREAM-INF tag is present in a variant file.
+	#This is a violation, and an ERROR.
+		logging.info("++----------------------------->> Entering vStreamInf")
+		checkV = False
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-STREAM-INF:'):
+				checkV = True
+		logging.info("++----------------------------->> Exiting vStreamInf")
+		return checkV
+	
+	
 	
 						 # Can't specify a string as it will be null, so lists were chosen
 	#content = []         # A list of the original content of the URL
@@ -417,7 +431,9 @@ class MixTagsCheck(Validator):
 			else:
 				pList.checkResults.append('<<----- PASSED: Media/Variant only contains Media/Variant tags ')
 		
-		
+#class StreamInfCheck(Validator):
+	#This Validator checks the EXT-X-STREAM-INF tag in Master playlists, and 
+	#checks to see if this 
 		
 		
 		
