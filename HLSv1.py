@@ -206,7 +206,7 @@ class Playlist(object):
 		nextLine = False  #Will be set true if next line does not contain .m3u8
 		bwAttr = True     #Will be set to false if no ATTRIBUTE in tag
 		for line in range(0, len(self.mContent)):
-			if self.mContent[line].startswith('#EXT-X-STREAM-INF:')
+			if self.mContent[line].startswith('#EXT-X-STREAM-INF:'):
 				if self.mContent[line].count('BANDWIDTH') < 1:
 					bwAttr = False
 				if  not self.mContent[line + 1].endswith('.m3u8'):
