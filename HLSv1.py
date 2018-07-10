@@ -431,11 +431,27 @@ class MixTagsCheck(Validator):
 			else:
 				pList.checkResults.append('<<----- PASSED: Media/Variant only contains Media/Variant tags ')
 		
-#class StreamInfCheck(Validator):
+class StreamInfCheck(Validator):
 	#This Validator checks the EXT-X-STREAM-INF tag in Master playlists, and 
-	#checks to see if this 
-		
-		
+	#checks to see if this is present (which is an ERROR) in variant playlists.
+	def visit(self, pList):
+		logging.info("++------------------------->> EXT-X-STREAM-INF Tag Validation")
+		pList.checkResults.append('<<-----EXT-X-STREAM-INF Tag Checks----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			resultLine, resultBW = mStreamInf(self)
+			if resultLine:
+				pList.checkResults.append('<<----- FAILED: Master> EXT-X-STREAM-INF tag not followed by URI')
+			else:
+				pList.checkResults.append('<<----- PASSED: EXT-X-STREAM-INF tags followed by URI')
+			if resultBW:
+				pList.checkResults.append('<<----- PASSED: BANDWIDTH attribute present in tag')
+			else:
+				pList.checkResults.append('<<----- FAILED: BANDWIDTH attribute missing in tag')
+		else:
+			resultTag - vStreamInf(self)
+			if resultTag:
+				pList.checkResults.append('<<----- FAILED: Variant> contains EXT-X-STREAM-INF tag')
 		
 ####################################
 #
