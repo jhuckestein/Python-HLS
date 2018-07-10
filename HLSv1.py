@@ -198,7 +198,20 @@ class Playlist(object):
 				mixedTags = True
 		return mixedTags
 		logging.info("++------------------------------>> Exiting  vMixCheck")
-	
+		
+	def mStreamInf(self, validator):
+	#This check looks to see if the EXT-X-STREAM-INF tag in a master playlist is
+	#followed by a URI line, and if the BANDWIDTH attribute is present.
+		logging.info("++----------------------------->> Entering mStreamInf")
+		nextLine = False  #Will be set true if next line does not contain .m3u8
+		bwAttr = True     #Will be set to false if no ATTRIBUTE in tag
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-STREAM-INF:')
+				if self.mContent[line].count('BANDWIDTH') < 1:
+					bwAttr = False
+				if  not self.mContent[line + 1].endswith('.m3u8'):
+					nextLine = True
+		return nextLine, bwAttr
 	
 						 # Can't specify a string as it will be null, so lists were chosen
 	#content = []         # A list of the original content of the URL
