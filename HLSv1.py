@@ -516,22 +516,16 @@ class StreamInfCheck(Validator):
 # multiple iterations are run successively.
 def clearMaster(playL):
 	logging.info("++----------------------------------->> Entering clearMaster")
-	# Address PlayList attributes and zero out
-	for i in range(0, len(playL.content)):
-		del playL.content[i]
-	for i in range(0, len(playL.suppliedURL)):
-		del playL.suppliedURL[i]
-	for i in range(0, len(playL.checkResults)):
-		del playL.checkResults[i]
+	#PlayList generic attributes are zero-d out
+	del playL.suppliedURL
+	playL.checkResults.clear()
 	del playL.playVersion
 	
 	# Address Master specific attributes and zero out
-	for i in range(0, len(playL.variantList)):
-		del playL.variantList[i]
-	for i in range(0, len(playL.variantURLs)):
-		del playL.variantURLs[i]
-	for i in range(0, len(playL.mContent)):
-		del playL.mContent[i]
+	playL.variantList.clear()
+	playL.variantURLs.clear()
+	playL.mContent.clear()
+	logging.info("++----------------------------------->> Leaving clearMaster")
 	return playL
 #
 # End of clearMaster
@@ -541,7 +535,18 @@ def clearMaster(playL):
 #
 # This funtion clears out playlist variables that are left over when
 # multiple iterations are run successively.
-#def clearVariant(playL):
+def clearVariant(playL):
+	logging.info("++----------------------------------->> Entering clearVariant")
+	#PlayList generic attributes are zero-d out
+	del playL.suppliedURL
+	playL.checkResults.clear()
+	del playL.playVersion
+	
+	#Now Variant specific attributes are zero-d out
+	#playL.type.clear()     - turn on when implemented
+	playL.vContent.clear()
+	logging.info("++----------------------------------->> Leaving clearVariant")
+	return playL
 
 #
 # End of clearVariant
@@ -621,8 +626,6 @@ def createMaster(conList, uRL):
 	logging.info("++------------------------->> Entering createMaster")
 	logging.info("++--------------->> Master URL: %s", uRL)
 	pList = MasterPlaylist()
-	#Here we clear out any left-over variables in the event command line mode was run
-	
 	pList.master = True
 	pList.mContent = []
 	pList.suppliedURL = uRL
@@ -691,8 +694,6 @@ def createVariant(contenList, urL):
 	logging.info("++------------------------->> Entering createVariant")
 	logging.info("++--------------->> Handed-in URL: %s", urL)
 	varList = VariantPlaylist()
-	#Here we clear out any left-over variables from command line inputs
-	
 	varList.master = False
 	varList.vContent = []
 	for i in range(0, len(contenList)):
@@ -869,7 +870,10 @@ def main(argv):
 			else:
 				url = userResponse
 				logging.info("++---------->> URL given: %s", userResponse)
-				del playlist  #delete the current playlist so we can create new one
+			if playlist.master:
+				playlist = clearMaster(playlist)
+			else:
+				playlist = clearVariant(playlist)
 		#End of the while execute: block, and end of command line block
 	
 	## Case where the Format specified is wrong
