@@ -510,6 +510,42 @@ class StreamInfCheck(Validator):
 # End of class VariantValidationReport
 ####################################
 
+####################################
+#
+# This funtion clears out playlist variables that are left over when
+# multiple iterations are run successively.
+def clearMaster(playL):
+	logging.info("++----------------------------------->> Entering clearMaster")
+	# Address PlayList attributes and zero out
+	for i in range(0, len(playL.content)):
+		del playL.content[i]
+	for i in range(0, len(playL.suppliedURL)):
+		del playL.suppliedURL[i]
+	for i in range(0, len(playL.checkResults)):
+		del playL.checkResults[i]
+	del playL.playVersion
+	
+	# Address Master specific attributes and zero out
+	for i in range(0, len(playL.variantList)):
+		del playL.variantList[i]
+	for i in range(0, len(playL.variantURLs)):
+		del playL.variantURLs[i]
+	for i in range(0, len(playL.mContent)):
+		del playL.mContent[i]
+	return playL
+#
+# End of clearMaster
+####################################
+
+####################################
+#
+# This funtion clears out playlist variables that are left over when
+# multiple iterations are run successively.
+#def clearVariant(playL):
+
+#
+# End of clearVariant
+####################################
 
 ####################################
 #
@@ -585,6 +621,8 @@ def createMaster(conList, uRL):
 	logging.info("++------------------------->> Entering createMaster")
 	logging.info("++--------------->> Master URL: %s", uRL)
 	pList = MasterPlaylist()
+	#Here we clear out any left-over variables in the event command line mode was run
+	
 	pList.master = True
 	pList.mContent = []
 	pList.suppliedURL = uRL
@@ -653,6 +691,8 @@ def createVariant(contenList, urL):
 	logging.info("++------------------------->> Entering createVariant")
 	logging.info("++--------------->> Handed-in URL: %s", urL)
 	varList = VariantPlaylist()
+	#Here we clear out any left-over variables from command line inputs
+	
 	varList.master = False
 	varList.vContent = []
 	for i in range(0, len(contenList)):
@@ -813,13 +853,7 @@ def main(argv):
 			print('The given URL was =', playlist.suppliedURL)
 			for line in range(0, len(playlist.checkResults)):
 				print(playlist.checkResults[line])
-			# This print block is not needed, because the CheckHeader is validating the
-			# variants correctly, but saving the results to the Master.checkResults[] -
-			# though I am not sure why.  I suspect it has something to do with visitor pattern.
-			# if playlist.master:
-				# for variant in range(0, len(playlist.variantList)):
-					# for l in range(0, len(variant.checkResults)):
-						# print(variant.checkResults[l])
+			
 			print('<<##--------------- End of Report ---------------##>>')
 			print('')
 			print('')
@@ -835,6 +869,7 @@ def main(argv):
 			else:
 				url = userResponse
 				logging.info("++---------->> URL given: %s", userResponse)
+				del playlist  #delete the current playlist so we can create new one
 		#End of the while execute: block, and end of command line block
 	
 	## Case where the Format specified is wrong
