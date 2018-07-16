@@ -465,7 +465,25 @@ class StreamInfCheck(Validator):
 			resultTag = pList.vStreamInf(self)
 			if resultTag:
 				pList.checkResults.append('<<----- FAILED: Variant> contains EXT-X-STREAM-INF tag')
-		
+
+class IFrameCheck(Validator):
+	#This Validator checks the EXT-X-I-FRAME-STREAM-INF tag in a Master playlist,
+	#and ensures the BANDWIDTH and URI attributes are present.
+	def visit(self, pList):
+		logging.info("++------------------------->> EXT-X-I-FRAME-STREAM-INF Tag Validation")
+		pList.checkResults.append('<<-----EXT-X-I-FRAME-STREAM-INF Tag Validation----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			bWidth, uri = pList.mIFrame(self)
+			if not bWidth:
+				pList.checkResults.append('<<-----FAILED: BANDWIDTH attribute missing in tag')
+			if not uri:
+				pList.checkResults.append('<<-----FAILED: URI attribute missing')
+			if bWidth and uri:
+				pList.checkResults.append('<<-----PASSED: BANDWIDTH and URI tags present')
+		logging.info("<<-------------------------++ EXT-X-I-FRAME-STREAM-INF Tag Validation")
+	
+	
 ####################################
 #
 # This class is used to create a validation report, and contains master results.
