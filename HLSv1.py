@@ -225,7 +225,20 @@ class Playlist(object):
 		logging.info("++----------------------------->> Exiting vStreamInf")
 		return checkV
 	
-	
+	def mIFrame(self, validator):
+	#This check applies to Master Playlists and if this tag is used it must have
+	#a BANDWIDTH and URI attribute
+		logging.info("++----------------------------->> Entering mIFrame")
+		bwAttr = True
+		uriAttr = True
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:'):
+				if self.mContent[line].count('BANDWIDTH') < 1:
+					bwAttr = False
+				if self.mContent[line].count('URI') < 1:
+					uriAttr = False
+		logging.info("<<-----------------------------++ Exiting mIFrame")
+		return bwAttr, uriAttr
 	
 						 # Can't specify a string as it will be null, so lists were chosen
 	#content = []         # A list of the original content of the URL
