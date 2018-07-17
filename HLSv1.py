@@ -902,6 +902,9 @@ def main(argv):
 			
 			iFrame = IFrameCheck()
 			playlist.accept(iFrame)
+			
+			sessDataCheck = SessionDataCheck()
+			playlist.accept(sessDataCheck)
 
 			
 			## Here we need to print out the contents of the checks:
