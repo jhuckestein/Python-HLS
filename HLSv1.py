@@ -493,62 +493,10 @@ class IFrameCheck(Validator):
 		logging.info("<<-------------------------++ EXT-X-I-FRAME-STREAM-INF Tag Validation")
 	
 	
-####################################
-#
-# This class is used to create a validation report, and contains master results.
-# class MasterValidationReport():
-	
-	# ## Mapping schema to the dictionary:
-	# #givenURL =                 # Applies to every entry
-	# #Header =                   # #EXTM3U on Master first line (ERROR)
-	# #properStreamBW = 	   	  # Master: #EXT-X-STREAM-INF has BANDWIDTH (ERROR)
-	# #properStreamRES =          # Master: #EXT-X-STREAM-INF has RESOLUTION (WARNING)
-	# #properStreamCOD =          # Master: #EXT-X-STREAM-INF has CODECS (WARNING)
-	# #properTSformat =           # Master: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
-	# #properEnd =                # Master: /URL.ts end in .m3u8 (contains due to format variations:ERROR) 
-	
-	# ## Because strings are immutable, a dictionary data structure was chosen with the
-	# ## keys defined above
-	# dict = {}.fromkeys(['givenURL', 'Header', 'properStreamBW', 'properStreamRES' \
-	              # 'properStreamCOD', 'properTSformat', 'properEnd'])
-	
-	# errorLines = []            # Master: Lines that have errors
-	# variantList = []           # Master: List of variants in file
-	# variantReportList = []     # Master: List of variant validation reports
-	# masterContents = []        # Master list of raw content
 
-#
-# End of ValidationReport
-####################################
-
-
-####################################
-#
-# This class is used to create a validation report, and contains variant results
-# class VariantValidationReport():
-	
-	# ## Mapping schema to the dictionary:
-	# # givenURL =                  # Applies to every playlist
-	# # type =                      # Variant: #EXT-X-PLAYLIST-TYPE: EVENT,VOD,LIVE (WARNING)
-	# # Header =                    # #EXTM3U on Variant first line (ERROR)
-	# # properTSformat =            # Variant: /URL.ts follows #EXT-X-STREAM-INF (ERROR)
-	# # properTsEnd =               # Variant: URL ends in .ts (contains due to format variations : ERROR))
-	# # properSequence =            # Variant: Has #EXT-MEDIA-SEQUENCE (ERROR)
-	# # properTarget =              # Variant: Has #EXT-X-TARGETDURATION (ERROR)
-	# # properVersion =             # Variant: Has #EXT-X-VERSION (WARNING)
-	# # properENDList =             # Variant: Has #EXT-X-ENDLIST in VOD (ERROR)
-	
-	# ## Because strings are immutable, a dictionary data structure was chosen with the
-	# ## keys defined above
-	# dict = {}.fromkeys(['givenURL', 'type', 'Header', 'properTSformat', 'properTsEnd', \
-	               # 'properSequence', 'properTarget', 'properVersion', 'properENDList'])
-	
-	# variantContents = []        # Variant list of raw content
 	
 	
-#
-# End of class VariantValidationReport
-####################################
+	
 
 ####################################
 #
