@@ -877,6 +877,9 @@ def main(argv):
 			
 			streamInf = StreamInfCheck()
 			playlist.accept(streamInf)
+			
+			iFrame = IFrameCheck()
+			playlist.accept(iFrame)
 
 			
 			## Here we need to print out the contents of the checks:
