@@ -529,7 +529,35 @@ class IFrameCheck(Validator):
 		pList.checkResults.append('')
 		logging.info("<<-------------------------++ EXT-X-I-FRAME-STREAM-INF Tag Validation")
 	
-	
+class SessionDataCheck(Validator):
+	#This Validator checks the EXT-X-SESSION-DATA tag for the DATA-ID, URI, VALUE, and multiple
+	#occurences of attributes.
+	def visit(self, pList):
+		logging.info("++------------------------->> EXT-X-SESSION-DATA Tag Validation")
+		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			idCheck, jsonCk, uriCk, multCk = pList.mSessionData(self)
+			if idCheck:
+				pList.checkResults.append('<<-----FAILED: EXT-X-SESSION-DATA tag missing DATA-ID attribute')
+			else:
+				pList.checkResults.append('<<-----PASSED: EXT-X-SESSION-DATA::DATA-ID check')
+			if jsonCk:
+				pList.checkResults.append('<<-----FAILED: URI attribute not JSON formatted')
+			else:
+				pList.checkResults.append('<<-----PASSED: JSON formatting check')
+			if uriCk:
+				pList.checkResults.append('<<-----FAILED: TAG may NOT have VALUE and URI attribute')
+			else:
+				pList.checkResults.append('<<-----PASSED: VALUE/URI check')
+			if multCk:
+				pList.checkResults.append('<<-----FAILED: Multiple DATA-ID attributes with same LANGUAGE')
+			else:
+				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check') 
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ EXT-X-SESSION-DATA Tag Validation")
 
 	
 	
