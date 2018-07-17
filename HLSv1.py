@@ -259,10 +259,11 @@ class Playlist(object):
 					dCheck = True
 				#If you have a VALUE it must be json formatted
 				if 'VALUE' in self.mContent[line]:
-					if not '.json' in self.mContent[line]:
-						json = True
 					if 'URI' in self.mContent[line]:
 						uri = True
+				if 'URI' in self.mContent[line]:
+					if not '.json' in self.mContent[line]:
+						json = True
 				#VALUE not found, so URI must be present
 				elif not 'URI' in self.mContent[line]:
 					missing = True
