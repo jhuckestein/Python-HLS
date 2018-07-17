@@ -239,9 +239,46 @@ class Playlist(object):
 					uriAttr = False
 		logging.info("<<-----------------------------++ Exiting mIFrame")
 		return bwAttr, uriAttr
+		
+	def mSessionData(self, validator):
+	#This check applies to Master Playlists and if this tag is used it must have
+	#a DATA-ID attribute.  It must also have one of: URI formatted as JSON or a value
+	#but, may not have a value and a URI.
+		logging.info("++----------------------------->> Entering mSessionData")
+		dCheck = False  #If the checks are violated, json, uri, and/or multiples
+		json = False   #will be set to True and returned.
+		uri = False
+		missing = False
+		multiples = False
+		tagList = []   #used to keep track of lines with the tag for multiples portion
+		possibleMults = [] #list of possible multiples
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-SESSION-DATA'):
+				#If you have the tag DATA-ID must be present
+				if not 'DATA-ID' in self.mContent[line]:
+					dCheck = True
+				#If you have a VALUE it must be json formatted
+				if 'VALUE' in self.mContent[line]:
+					if not '.json' in self.mContent[line]:
+						json = True
+					if 'URI' in self.mContent[line]:
+						uri = True
+				#VALUE not found, so URI must be present
+				elif not 'URI' in self.mContent[line]:
+					missing = True
+				tagList.append(self.mContent[line])
+		if len(tagList) > 0:  #If no tags found not an issue
+			#Filter out all of the possible multiple DATA-ID:LANGUAGE tags
+			for l in range(0, len(tagList)):
+				if 'DATA-ID' in tagList[l] and 'LANGUAGE' in tagList[l]:
+					possibleMults.append(tagList[l])
+			#Use the possible multiples to create a 
+			for k in range(0, len(possibleMults)):
+				print(possibleMults[k])
+		return dCheck, json, uri, multiples
+		logging.info("<<-----------------------------+++ Exiting mSessionData")
 	
-						 # Can't specify a string as it will be null, so lists were chosen
-	#content = []         # A list of the original content of the URL
+						 # Can't specify a string as it will be null, so lists could be used
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
 	#playVersion         # Integer used to store playlist version, 0 if not used
@@ -257,7 +294,7 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
 	type = []  # EVENT,VOD,LIVE
-	vContent = []
+	vContent = []     #List of content from the original URL
 	
 	
 class MasterPlaylist(Playlist):
@@ -269,7 +306,7 @@ class MasterPlaylist(Playlist):
 	
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
-	mContent = []
+	mContent = []     #List of content from the original URL
 
 
 ## This is where the visitors (check hierarchy) are defined
