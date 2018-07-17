@@ -443,6 +443,9 @@ class MixTagsCheck(Validator):
 				pList.checkResults.append('<<----- FAILED: Media/Variant Playlist contains Master tags ')
 			else:
 				pList.checkResults.append('<<----- PASSED: Media/Variant only contains Media/Variant tags ')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----Mixed Tags Checks----->>')
+		pList.checkResults.append('')
 		
 class StreamInfCheck(Validator):
 	#This Validator checks the EXT-X-STREAM-INF tag in Master playlists, and 
@@ -465,6 +468,9 @@ class StreamInfCheck(Validator):
 			resultTag = pList.vStreamInf(self)
 			if resultTag:
 				pList.checkResults.append('<<----- FAILED: Variant> contains EXT-X-STREAM-INF tag')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----EXT-X-STREAM-INF Tag Checks----->>')
+		pList.checkResults.append('')
 
 class IFrameCheck(Validator):
 	#This Validator checks the EXT-X-I-FRAME-STREAM-INF tag in a Master playlist,
@@ -481,6 +487,9 @@ class IFrameCheck(Validator):
 				pList.checkResults.append('<<-----FAILED: URI attribute missing')
 			if bWidth and uri:
 				pList.checkResults.append('<<-----PASSED: BANDWIDTH and URI tags present')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----EXT-X-I-FRAME-STREAM-INF Tag Validation----->>')
+		pList.checkResults.append('')
 		logging.info("<<-------------------------++ EXT-X-I-FRAME-STREAM-INF Tag Validation")
 	
 	
