@@ -292,7 +292,10 @@ class Playlist(object):
 			for k in range(0, len(dIDList)):
 				logging.info("++---------->> DATA-ID= %s", dIDList[k])
 				logging.info("++---------->> LANGUAGE= %s", langList[k])
-				
+				for j in range(k+1, len(dIDList)):
+					if dIDList[k] == dIDList[j] and langList[k] == langList[j]:
+						multiples = True
+						
 			logging.info("<<-------------------++ mSessionData possible multiples")
 		return dCheck, json, uri, multiples
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
