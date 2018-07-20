@@ -575,7 +575,7 @@ class SessionDataCheck(Validator):
 			if multCk:
 				pList.checkResults.append('<<-----FAILED: Multiple DATA-ID attributes with same LANGUAGE')
 			else:
-				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check (NOT ACTIVE)') 
+				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check') 
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
 		pList.checkResults.append('')
