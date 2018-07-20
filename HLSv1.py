@@ -252,6 +252,9 @@ class Playlist(object):
 		multiples = False
 		tagList = []   #used to keep track of lines with the tag for multiples portion
 		possibleMults = [] #list of possible multiples
+		dIDList = []       #Used to keep track of DATA-ID values for multiple tags
+		langList = []      #Used to keep track of LANGUAGE values for multiples
+		iterList = []      #Working list used for parsing possible multiple tags
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-SESSION-DATA'):
 				#If you have the tag DATA-ID must be present
@@ -273,9 +276,22 @@ class Playlist(object):
 			for l in range(0, len(tagList)):
 				if 'DATA-ID' in tagList[l] and 'LANGUAGE' in tagList[l]:
 					possibleMults.append(tagList[l])
-			#Use the possible multiples to create a 
+			#Current logic: now that we have a list of possible multiples we need to split(")
+			#each line to extract the first and third elements.  If that set matches another
+			#set, then we have a multiple DATA-ID and LANGUAGE and multiples is set to True.
+			
+			#Extract the values into new lists we can compare
 			for k in range(0, len(possibleMults)):
-				print(possibleMults[k])
+				iterList = possibleMults[k].split('"')
+				dIDList.append(iterList[1])
+				langList.append(iterList[3])
+				iterList.clear()
+				
+			#For now just print the contents of the compare lists
+			for k in range(0, len(dIDList)):
+				print("DATA-ID =", dIDList[k], "  LANGUAGE = ", langList[k])
+				
+				
 		return dCheck, json, uri, multiples
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
 	
@@ -554,7 +570,7 @@ class SessionDataCheck(Validator):
 			if multCk:
 				pList.checkResults.append('<<-----FAILED: Multiple DATA-ID attributes with same LANGUAGE')
 			else:
-				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check') 
+				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check (NOT ACTIVE)') 
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
 		pList.checkResults.append('')
