@@ -272,6 +272,7 @@ class Playlist(object):
 					missing = True
 				tagList.append(self.mContent[line])
 		if len(tagList) > 0:  #If no tags found not an issue
+			logging.info("++------------------->> mSessionData possible multiples")
 			#Filter out all of the possible multiple DATA-ID:LANGUAGE tags
 			for l in range(0, len(tagList)):
 				if 'DATA-ID' in tagList[l] and 'LANGUAGE' in tagList[l]:
@@ -287,11 +288,12 @@ class Playlist(object):
 				langList.append(iterList[3])
 				iterList.clear()
 				
-			#For now just print the contents of the compare lists
+			#Now iterate through the dIDList and look for multiples
 			for k in range(0, len(dIDList)):
-				print("DATA-ID =", dIDList[k], "  LANGUAGE = ", langList[k])
+				logging.info("++---------->> DATA-ID= %s", dIDList[k])
+				logging.info("++---------->> LANGUAGE= %s", langList[k])
 				
-				
+			logging.info("<<-------------------++ mSessionData possible multiples")
 		return dCheck, json, uri, multiples
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
 	
