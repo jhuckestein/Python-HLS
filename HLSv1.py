@@ -315,8 +315,19 @@ class Playlist(object):
 		segments = False  #Result of segments test where True indicates a Failure
 		start = False     #Result of START test where True indicates a Failure
 		tOffset = False   #Result of Time offset attribute where True indicates a failure
-		
+		for line in range(0, len(self.mContent)):
+			if self.mContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
+				segCount += 1
+			elif self.mContent[line].startswith('#EXT-X-START'):
+				startCount += 1
+				if 'TIME-OFFSET' not in self.mContent[line]:
+					tOffset = True
+		if segCount > 1:
+			segments = True
+		if startCount > 1:
+			start = True
 		logging.info("<<------------------------------++ Exiting mvMediaMaster")
+		return segments, start, tOffset
 	
 	
 	
