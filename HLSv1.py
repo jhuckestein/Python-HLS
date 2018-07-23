@@ -297,8 +297,29 @@ class Playlist(object):
 						multiples = True
 						
 			logging.info("<<-------------------++ mSessionData possible multiples")
-		return dCheck, json, uri, multiples
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
+		return dCheck, json, uri, multiples
+		
+	
+	#def mSessionKey(self, validator):
+		#A Master Playlist MUST NOT contain more than one EXT-X-SESSION-KEY tag with the same
+		#METHOD, URI, IV, KEYFORMAT, and KEYFORMATVERSIONS attribute values.  No example in spec.
+		
+	def mvMediaMaster(self, validator):
+		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
+		#a Master or Variant playlist.  They MUST only appear once in the playlist.  Additionally,
+		#the START tag also has a REQUIRED TIME-OFFSET attribute (if the optional tag is used.)
+		logging.info("++------------------------------>> Entering mvMediaMaster")
+		segCount = 0   #counter used to keep track of the number of SEGMENTS tags
+		startCount = 0 #counter used to keep track of the number of START tags
+		segments = False  #Result of segments test where True indicates a Failure
+		start = False     #Result of START test where True indicates a Failure
+		tOffset = False   #Result of Time offset attribute where True indicates a failure
+		
+		logging.info("<<------------------------------++ Exiting mvMediaMaster")
+	
+	
+	
 	
 						 # Can't specify a string as it will be null, so lists could be used
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
