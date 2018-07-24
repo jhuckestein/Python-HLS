@@ -659,8 +659,22 @@ class MediaMasterCheck(Validator):
 				pList.checkResults.append('<<-----FAILED: EXT-X-START:TIME-OFFSET attribute missing')
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START:TIME-OFFSET check')
-		#else:
-		
+			#for line in range(0, len(pList.variantList)):
+			
+		else:
+			segTag, startTag, timeTag = pList.vMediaMaster(self)
+			if segTag:
+				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found in variant')
+			else:
+				pList.checkResults.append('<<-----PASSED: EXT-X-INDEPENDENT-SEGMENTS check')
+			if startTag:
+				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-START tags found in variant')
+			else:
+				pList.checkResults.append('<<-----PASSED: EXT-X-START check')
+			if timeTag:
+				pList.checkResults.append('<<-----FAILED: EXT-X-START:TIME-OFFSET attribute missing in variant')
+			else:
+				pList.checkResults.append('<<-----PASSED: EXT-X-START:TIME-OFFSET check')
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
 		pList.checkResults.append('')
