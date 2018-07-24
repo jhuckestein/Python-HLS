@@ -762,7 +762,19 @@ class MediaSequenceCheck(Validator):
 		logging.info("++------------------------->> MediaSequenceCheck Validation")
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		
+		if pList.master:
+			print('placeholder for master playlist loop')
+		else:
+			tCount, tagCheck, multiTag = pList.vMediaSequence(self)
+			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
+			if tCount == 0:
+				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE is NOT present')
+			elif check:
+				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments')
+			elif not check:
+				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag')
+			elif multiTag:
+				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed')
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
