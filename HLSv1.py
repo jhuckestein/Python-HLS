@@ -659,8 +659,9 @@ class MediaMasterCheck(Validator):
 				pList.checkResults.append('<<-----FAILED: EXT-X-START:TIME-OFFSET attribute missing')
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START:TIME-OFFSET check')
-			#for line in range(0, len(pList.variantList)):
-			
+			for variant in range(0, len(pList.variantList)):
+				medMasCheck = MediaMasterCheck()
+				pList.variantList[variant].accept(medMasCheck)
 		else:
 			segTag, startTag, timeTag = pList.vMediaMaster(self)
 			if segTag:
@@ -1025,6 +1026,9 @@ def main(argv):
 			
 			sessDataCheck = SessionDataCheck()
 			playlist.accept(sessDataCheck)
+			
+			mediaMasterCheck = MediaMasterCheck()
+			playlist.accept(mediaMasterCheck)
 
 			
 			## Here we need to print out the contents of the checks:
