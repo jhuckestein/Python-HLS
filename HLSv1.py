@@ -613,6 +613,19 @@ class SessionDataCheck(Validator):
 		pList.checkResults.append('')
 		logging.info("<<-------------------------++ EXT-X-SESSION-DATA Tag Validation")
 
+class MediaMasterCheck(Validator):
+	#This validator addresses the two tags that can appear in both a Media or Master playlist.
+	#The EXT-X-INDEPENDENT-SEGMENTS tag is verified to only have one instance within a file.
+	#The EXT-X-START tag is verified to appear only once, and that the TIME-OFFSET attribute is present.
+	def visit(self, pList):
+		logging.info("++------------------------->> Media & Master Tag Validation")
+		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
+		pList.checkResults.append('')
+		
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ EXT-X-SESSION-DATA Tag Validation")
 	
 	
 	
