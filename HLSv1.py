@@ -378,8 +378,26 @@ class Playlist(object):
 		logging.info("<<------------------------------++ Exiting vTargetDuration")
 		return check, multTag, durationCheck
 	
-	
-	
+	def vMediaSequence(self, validator):
+		#This method ensures that the optional EXT-X-MEDIA-SEQUENCE tag appears only once in a playlist
+		#and if present appears before the first media segment in the playlist.
+		logging.info("++------------------------------>> Entering vMediaSequence")
+		count = 0         #Keeps track of the number of times this tag is found in playlist
+		medSeg = False  #Set to True when a media-segment.ts is encountered
+		check = False   #Returned as True if EXT-X-MEDIA-SEQUENCE tag present and before first media segment
+		multTag = False #Returned as True if too many tags 
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].endswith('.ts'):
+				medSeg = True
+			if self.vContent[line].startswith('#EXT-X-MEDIA-SEQUENCE'):
+				count = count + 1
+				if not medSeg:
+					check = True
+		if count > 1:
+			multTag = True
+		logging.info("<<------------------------------++ Exiting vMediaSequence")
+		return count, check, multTag
+		
 						 # Can't specify a string as it will be null, so lists could be used
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
