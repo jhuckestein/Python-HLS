@@ -305,11 +305,11 @@ class Playlist(object):
 		#A Master Playlist MUST NOT contain more than one EXT-X-SESSION-KEY tag with the same
 		#METHOD, URI, IV, KEYFORMAT, and KEYFORMATVERSIONS attribute values.  No example in spec.
 		
-	def mvMediaMaster(self, validator):
+	def mMediaMaster(self, validator):
 		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
 		#a Master or Variant playlist.  They MUST only appear once in the playlist.  Additionally,
 		#the START tag also has a REQUIRED TIME-OFFSET attribute (if the optional tag is used.)
-		logging.info("++------------------------------>> Entering mvMediaMaster")
+		logging.info("++------------------------------>> Entering mMediaMaster")
 		segCount = 0   #counter used to keep track of the number of SEGMENTS tags
 		startCount = 0 #counter used to keep track of the number of START tags
 		segments = False  #Result of segments test where True indicates a Failure
@@ -326,7 +326,31 @@ class Playlist(object):
 			segments = True
 		if startCount > 1:
 			start = True
-		logging.info("<<------------------------------++ Exiting mvMediaMaster")
+		logging.info("<<------------------------------++ Exiting mMediaMaster")
+		return segments, start, tOffset
+		
+	def vMediaMaster(self, validator):
+		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
+		#a Master or Variant playlist.  They MUST only appear once in the playlist.  Additionally,
+		#the START tag also has a REQUIRED TIME-OFFSET attribute (if the optional tag is used.)
+		logging.info("++------------------------------>> Entering vMediaMaster")
+		segCount = 0   #counter used to keep track of the number of SEGMENTS tags
+		startCount = 0 #counter used to keep track of the number of START tags
+		segments = False  #Result of segments test where True indicates a Failure
+		start = False     #Result of START test where True indicates a Failure
+		tOffset = False   #Result of Time offset attribute where True indicates a failure
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
+				segCount += 1
+			elif self.vContent[line].startswith('#EXT-X-START'):
+				startCount += 1
+				if 'TIME-OFFSET' not in self.vContent[line]:
+					tOffset = True
+		if segCount > 1:
+			segments = True
+		if startCount > 1:
+			start = True
+		logging.info("<<------------------------------++ Exiting vMediaMaster")
 		return segments, start, tOffset
 	
 	
@@ -622,7 +646,7 @@ class MediaMasterCheck(Validator):
 		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
 		pList.checkResults.append('')
 		if pList.master:
-			segTag, startTag, timeTag = pList.mvMediaMaster(self)
+			segTag, startTag, timeTag = pList.mMediaMaster(self)
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found')
 			else:
