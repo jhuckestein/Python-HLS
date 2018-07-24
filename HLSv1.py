@@ -763,15 +763,17 @@ class MediaSequenceCheck(Validator):
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
 		if pList.master:
-			print('placeholder for master playlist loop')
+			for variant in range(0, len(pList.variantList)):
+				varMedSeqCheck = MediaSequenceCheck()
+				pList.variantList[variant].accept(varMedSeqCheck)
 		else:
 			tCount, tagCheck, multiTag = pList.vMediaSequence(self)
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
 			if tCount == 0:
 				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE is NOT present')
-			elif check:
+			elif tagCheck:
 				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments')
-			elif not check:
+			elif not tagCheck:
 				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag')
 			elif multiTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed')
@@ -1128,6 +1130,9 @@ def main(argv):
 			
 			targetDurCheck = TargetDurationCheck()
 			playlist.accept(targetDurCheck)
+			
+			medSeqCheck = MediaSequenceCheck()
+			playlist.accept(medSeqCheck)
 
 			
 			## Here we need to print out the contents of the checks:
