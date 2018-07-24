@@ -754,7 +754,19 @@ class TargetDurationCheck(Validator):
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
 		logging.info("<<-------------------------++ TargetDurationCheck Validation")
-	
+		
+class MediaSequenceCheck(Validator):
+	#This check looks to see if the optional EXT-X-MEDIA-SEQUENCE appears only once in the playlist
+	#and if present after the first media-segment.ts in the playlist.
+	def visit(self, pList):
+		logging.info("++------------------------->> MediaSequenceCheck Validation")
+		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ MediaSequenceCheck Validation")
 
 ####################################
 #
