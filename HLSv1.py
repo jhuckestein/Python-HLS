@@ -647,6 +647,7 @@ class MediaMasterCheck(Validator):
 		pList.checkResults.append('')
 		if pList.master:
 			segTag, startTag, timeTag = pList.mMediaMaster(self)
+			pList.checkResults.append('<<----- Master Playlist: ' + pList.suppliedURL)
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found')
 			else:
@@ -664,6 +665,7 @@ class MediaMasterCheck(Validator):
 				pList.variantList[variant].accept(medMasCheck)
 		else:
 			segTag, startTag, timeTag = pList.vMediaMaster(self)
+			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found in variant')
 			else:
