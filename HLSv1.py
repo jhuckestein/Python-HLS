@@ -367,12 +367,12 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-TARGETDURATION'):
 				check = True
-				count = Count + 1
+				count = count + 1
 				maxDuration = float(self.vContent[line].strip('#EXT-X-TARGETDURATION:'))
 				if count > 1:
 					multTag = True
 			if self.vContent[line].startswith('#EXTINF:'):
-				duration = float(self.vContent[line].strip('#EXTINF:'))
+				duration = float(self.vContent[line].strip('#EXTINF:,'))
 				if duration > maxDuration:
 					durationCheck = True
 		logging.info("<<------------------------------++ Exiting vTargetDuration")
@@ -716,7 +716,9 @@ class TargetDurationCheck(Validator):
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
 		if pList.master:
-			print('placeholder for master iteration loop')
+			for variant in range(0, len(pList.variantList)):
+				varTargDurCheck = TargetDurationCheck()
+				pList.variantList[variant].accept(varTargDurCheck)
 		else:
 			tagCheck, multiTag, durCheck = pList.vTargetDuration(self)
 			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
@@ -1081,6 +1083,9 @@ def main(argv):
 			
 			mediaMasterCheck = MediaMasterCheck()
 			playlist.accept(mediaMasterCheck)
+			
+			targetDurCheck = TargetDurationCheck()
+			playlist.accept(targetDurCheck)
 
 			
 			## Here we need to print out the contents of the checks:
