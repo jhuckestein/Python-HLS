@@ -705,9 +705,35 @@ class MediaMasterCheck(Validator):
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
 		pList.checkResults.append('')
-		logging.info("<<-------------------------++ EXT-X-SESSION-DATA Tag Validation")
+		logging.info("<<-------------------------++ Media & Master Tag Validation")
 	
-	
+class TargetDurationCheck(Validator):
+	#This check looks at the EXT-X-TARGETDURATION tag (required) and ensures that there is only one
+	#instance in a Variant playlist.  It also looks at the EXTINF tag and ensures that the duration value for 
+	#each media segment is less than or equal to the maximum value.
+	def visit(self, pList):
+		logging.info("++------------------------->> TargetDurationCheck Validation")
+		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			print('placeholder for master iteration loop')
+		else:
+			tagCheck, multiTag, durCheck = pList.vTargetDuration(self)
+			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
+			if tagCheck:
+				pList.checkResults.append('<<-----PASSED: TARGETDURATION Tag is present')
+			else:
+				pList.checkResults.append('<<-----FAILED: EXT-X-TARGETDURATION Tag is REQUIRED')
+			if multiTag:
+				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-TARGETDURATION Tags Found')
+			if durCheck:
+				pList.checkResults.append('<<-----FAILED: EXTINF duration values greater then Maximum')
+			else:
+				pList.checkResults.append('<<-----PASSED: DURATION for EXTINF tags less than MAX')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ TargetDurationCheck Validation")
 	
 
 ####################################
