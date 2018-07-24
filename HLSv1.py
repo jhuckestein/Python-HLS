@@ -352,7 +352,31 @@ class Playlist(object):
 			start = True
 		logging.info("<<------------------------------++ Exiting vMediaMaster")
 		return segments, start, tOffset
-	
+		
+	def vTargetDuration(self, validator):
+		#This method ensures that this tag only appears once in a playlist, and the EXTINF duration 
+		#must be less than or equal to this maximum amount.
+		logging.info("++------------------------------>> Entering vTargetDuration")
+		count = 0         #Keeps track of the number of times this tag is found in playlist
+		duration = 0.0    #Duration from EXTINF tag
+		maxDuration = 0.0 #Duration from Targetduration tag (the max value)
+		delim = 0       #Used to note the position of ',' in the tag for slicing the duration value
+		check = False   #Returned as True if TARGETDURATION tag present
+		multTag = False #Returned as True if too many tags 
+		durationCheck = False  #Returned as True if duration > maxDuration
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-TARGETDURATION'):
+				check = True
+				count = Count + 1
+				maxDuration = float(self.vContent[line].strip('#EXT-X-TARGETDURATION:'))
+				if count > 1:
+					multTag = True
+			if self.vContent[line].startswith('#EXTINF:'):
+				duration = float(self.vContent[line].strip('#EXTINF:'))
+				if duration > maxDuration:
+					durationCheck = True
+		logging.info("<<------------------------------++ Exiting vTargetDuration")
+		return check, multTag, durationCheck
 	
 	
 	
