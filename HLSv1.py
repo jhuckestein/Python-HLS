@@ -852,7 +852,8 @@ class IFramesOnlyCheck(Validator):
 		pList.checkResults.append('')
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
-				print('placeholder')
+				iFrameOnlyCk = IFramesOnlyCheck()
+				pList.variantList[variant].accept(iFrameOnlyCk)
 		else:
 			frameCheck, mediaSeg = pList.vIFramesOnly(self)
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
@@ -1222,6 +1223,9 @@ def main(argv):
 			
 			discontinuitySequenceCheck = DiscontinuitySequenceCheck()
 			playlist.accept(discontinuitySequenceCheck)
+			
+			iFrameOnlyCheck = IFramesOnlyCheck()
+			playlist.accept(iFrameOnlyCheck)
 
 			
 			## Here we need to print out the contents of the checks:
