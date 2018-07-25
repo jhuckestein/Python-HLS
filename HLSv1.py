@@ -801,6 +801,34 @@ class MediaSequenceCheck(Validator):
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
 		logging.info("<<-------------------------++ MediaSequenceCheck Validation")
+		
+class DiscontinuitySequenceCheck(Validator):
+	#This check looks to see if the optional EXT-X-DISCONTINUITY-SEQUENCE appears only once in the playlist
+	#and if present after the first media-segment.ts in the playlist.
+	def visit(self, pList):
+		logging.info("++------------------------->> DiscontinuitySequenceCheck Validation")
+		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		if pList.master:
+			for variant in range(0, len(pList.variantList)):
+				print('placeholder')
+				#varMedSeqCheck = MediaSequenceCheck()
+				#pList.variantList[variant].accept(varMedSeqCheck)
+		else:
+			tCount, tagCheck, multiTag = pList.vDiscontinuitySequence(self)
+			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
+			if tCount == 0:
+				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE is NOT present')
+			elif tagCheck:
+				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments')
+			elif not tagCheck:
+				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag')
+			elif multiTag:
+				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed')
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ DiscontinuitySequenceCheck Validation")
 
 ####################################
 #
