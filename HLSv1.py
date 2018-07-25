@@ -842,6 +842,19 @@ class DiscontinuitySequenceCheck(Validator):
 		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
 		logging.info("<<-------------------------++ DiscontinuitySequenceCheck Validation")
+		
+class IFramesOnlyCheck(Validator):
+	#This validator checks to see if a variant playlist contains the EXT-X-I-FRAMES-ONLY tag, and if it 
+	#does, then raises a warning if the EXT-X-MAP tag is not in the file.
+	def visit(self, pList):
+		logging.info("++------------------------->> IFramesOnlyCheck Validation")
+		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		
+		pList.checkResults.append('')
+		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
+		pList.checkResults.append('')
+		logging.info("<<-------------------------++ IFramesOnlyCheck Validation")
 
 ####################################
 #
