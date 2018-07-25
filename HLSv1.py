@@ -850,7 +850,19 @@ class IFramesOnlyCheck(Validator):
 		logging.info("++------------------------->> IFramesOnlyCheck Validation")
 		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		
+		if pList.master:
+			for variant in range(0, len(pList.variantList)):
+				print('placeholder')
+		else:
+			frameCheck, mediaSeg = pList.vIFramesOnly(self)
+			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
+			if not frameCheck:
+				pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY tag NOT used')
+			else:
+				if mediaSeg:
+					pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY used with media initializaion')
+				else:
+					pList.checkResults.append('<<-----WARNING: EXT-X-I-FRAMES-ONLY tag should accompany EXT-X-MAP')
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
 		pList.checkResults.append('')
