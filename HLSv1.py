@@ -418,6 +418,20 @@ class Playlist(object):
 		logging.info("<<------------------------------++ Exiting vDiscontinuitySequence")
 		return count, check, multTag
 		
+	def vIFramesOnly(self, validator):
+	#This method checks to see if a variant playlist contains the EXT-X-I-FRAMES-ONLY tag, and if it 
+	#does, then raises a warning if the EXT-X-MAP tag is not in the file.
+		logging.info("++------------------------------>> Entering vIFramesOnly")
+		check = False  #Set to True when EXT-X-I-FRAMES-ONLY tag is found
+		medSeg = False #Set to True when EXT-X-MAP tag is found
+		for line in range(0, len(self.vContent)):
+			if self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY'):
+				check = True
+			if self.vContent[line].startswith('#EXT-X-MAP'):
+				medSeg = True
+		logging.info("<<------------------------------++ Exiting vIFramesOnly")
+		return check, medSeg
+		
 						 # Can't specify a string as it will be null, so lists could be used
 	#suppliedURL = []	 # The URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
