@@ -959,7 +959,7 @@ def openURL(url):
 	else:
 		try:
 			logging.info("++---------->> Attempting openURL using file-handle")
-			fileHandle = open(url,'r')
+			fileHandle = open(url,'r+')
 			logging.info("++---------->> The returned file handle= %s", fileHandle)
 			logging.info("++---------->> The returned valid= %s", valid)
 			logging.info("++---------->> The returned web= %s", web)
@@ -1167,9 +1167,52 @@ def main(argv):
 		batchFile, validPlayL, webURL = openURL(url)
 		outFileHandle, pHold1, pHold2 = openURL(outputFile)  #pHold1 and pHold2 NOT used
 		
+		#If the user gave us a playlist then we only do this once
+		if validPlayL:
+			playlist = createPlaylist(batchFile, validPlayL, webURL, url)
+			
+			#We have a playlist, so run our checks in order
+			hCheck = HeaderCheck()
+			playlist.accept(hCheck)
+			
+			vCheck = VersionCheck()
+			playlist.accept(vCheck)
+			
+			vCompCheck = VerCompatCheck()
+			playlist.accept(vCompCheck)
+			
+			mixCheck = MixTagsCheck()
+			playlist.accept(mixCheck)
+			
+			streamInf = StreamInfCheck()
+			playlist.accept(streamInf)
+			
+			iFrame = IFrameCheck()
+			playlist.accept(iFrame)
+			
+			sessDataCheck = SessionDataCheck()
+			playlist.accept(sessDataCheck)
+			
+			mediaMasterCheck = MediaMasterCheck()
+			playlist.accept(mediaMasterCheck)
+			
+			targetDurCheck = TargetDurationCheck()
+			playlist.accept(targetDurCheck)
+			
+			medSeqCheck = MediaSequenceCheck()
+			playlist.accept(medSeqCheck)
+			
+			discontinuitySequenceCheck = DiscontinuitySequenceCheck()
+			playlist.accept(discontinuitySequenceCheck)
+			
+			iFrameOnlyCheck = IFramesOnlyCheck()
+			playlist.accept(iFrameOnlyCheck)
+			
+			#Create a Header in the output file
+			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+		
 		#then read in each line from the file  - loop
-		#proceed with the logic of whether this is a Master or Variant
-		#copy the rest of the execution, 
+		#run each of our checks
 		#output the results to a file name that I choose
 		#close the output file
 		outFileHandle.close()
