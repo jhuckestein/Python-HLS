@@ -1228,13 +1228,84 @@ def main(argv):
 				outFileHandle.write(playlist.checkResults[line])
 				outFileHandle.write('\n')
 			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
-		
-		#then read in each line from the file  - loop
-		#run each of our checks
-		#output the results to a file name that I choose
-		#close the output file
-		outFileHandle.close()
-		batchFile.close()
+			outFileHandle.close()
+			batchFile.close()
+		#Case where the user supplied a text file of playlist files
+		else:
+			#Create a Header in the output file
+			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
+			s2 = str(secondLine)
+			outFileHandle.write(s2)
+			outFileHandle.write('\n')
+			thirdLine = ('The playlist was a Master =', playlist.master)
+			s3 = str(thirdLine)
+			outFileHandle.write(s3)
+			outFileHandle.write('\n')
+			fourthLine = ('The given URL was =', playlist.suppliedURL)
+			s4 = str(fourthLine)
+			outFileHandle.write(s4)
+			outFileHandle.write('\n')
+			
+			#Now process each line in the batch file containing playlist file URLs
+			for line in batchFile:
+				playListFile, valPlayL, wURL = openURL(line)
+				playlist = createPlaylist(playListFile, valPlayL, wURL, line)
+			
+				#We have a playlist, so run our checks in order
+				hCheck = HeaderCheck()
+				playlist.accept(hCheck)
+				
+				vCheck = VersionCheck()
+				playlist.accept(vCheck)
+				
+				vCompCheck = VerCompatCheck()
+				playlist.accept(vCompCheck)
+				
+				mixCheck = MixTagsCheck()
+				playlist.accept(mixCheck)
+				
+				streamInf = StreamInfCheck()
+				playlist.accept(streamInf)
+				
+				iFrame = IFrameCheck()
+				playlist.accept(iFrame)
+				
+				sessDataCheck = SessionDataCheck()
+				playlist.accept(sessDataCheck)
+				
+				mediaMasterCheck = MediaMasterCheck()
+				playlist.accept(mediaMasterCheck)
+				
+				targetDurCheck = TargetDurationCheck()
+				playlist.accept(targetDurCheck)
+				
+				medSeqCheck = MediaSequenceCheck()
+				playlist.accept(medSeqCheck)
+				
+				discontinuitySequenceCheck = DiscontinuitySequenceCheck()
+				playlist.accept(discontinuitySequenceCheck)
+				
+				iFrameOnlyCheck = IFramesOnlyCheck()
+				playlist.accept(iFrameOnlyCheck)
+				
+				#Now print the results to the output file
+				for line in range(0, len(playlist.checkResults)):
+					outFileHandle.write(playlist.checkResults[line])
+					outFileHandle.write('\n')
+				
+				#Now add some formatting to the output file
+				outFileHandle.write('<<----------End of Individual Playlist---------->>\n')
+				outFileHandle.write('\n')
+				
+				#Now close the playlist file handle
+				playListFile.close()
+			#Now indicate that the report is concluded
+			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+			
+			#Close the output file and batchFile
+			outFileHandle.close()
+			batchFile.close()
 	
 	## Command line execution block
 	elif (sys.argv[1] == "command"):
