@@ -1238,20 +1238,22 @@ def main(argv):
 			s2 = str(secondLine)
 			outFileHandle.write(s2)
 			outFileHandle.write('\n')
-			thirdLine = ('The playlist was a Master =', playlist.master)
-			s3 = str(thirdLine)
-			outFileHandle.write(s3)
-			outFileHandle.write('\n')
-			fourthLine = ('The given URL was =', playlist.suppliedURL)
-			s4 = str(fourthLine)
-			outFileHandle.write(s4)
-			outFileHandle.write('\n')
 			
 			#Now process each line in the batch file containing playlist file URLs
 			for line in batchFile:
 				playListFile, valPlayL, wURL = openURL(line)
 				playlist = createPlaylist(playListFile, valPlayL, wURL, line)
-			
+				
+				#Add formatting to the output file so we know about the file
+				thirdLine = ('The playlist was a Master =', playlist.master)
+				s3 = str(thirdLine)
+				outFileHandle.write(s3)
+				outFileHandle.write('\n')
+				fourthLine = ('The given URL was =', playlist.suppliedURL)
+				s4 = str(fourthLine)
+				outFileHandle.write(s4)
+				outFileHandle.write('\n')
+				
 				#We have a playlist, so run our checks in order
 				hCheck = HeaderCheck()
 				playlist.accept(hCheck)
@@ -1301,7 +1303,7 @@ def main(argv):
 				#Now close the playlist file handle
 				playListFile.close()
 			#Now indicate that the report is concluded
-			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
 			
 			#Close the output file and batchFile
 			outFileHandle.close()
