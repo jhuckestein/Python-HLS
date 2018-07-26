@@ -1137,6 +1137,8 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 #
 # This is the main program function
 def main(argv):
+	outputFile = 'output.txt'  #Used for batch mode output to local disk
+	
 	## First check to see if there are enough inputs, if not provide syntax
 	if len(sys.argv) < 3:
 		print ("python3.6 HLSv1.py <format: batch> <batch-file-name>")
@@ -1158,6 +1160,20 @@ def main(argv):
 	## Batch mode execution block
 	if (sys.argv[1] == "batch"):
 		logging.info("++---------->> Entered Batch mode:")
+		validPlayL = False
+		webURL = False
+		#so, I need to try and open the file given which contains playlists
+		url = sys.argv[2]
+		batchFile, validPlayL, webURL = openURL(url)
+		outFileHandle, pHold1, pHold2 = openURL(outputFile)  #pHold1 and pHold2 NOT used
+		
+		#then read in each line from the file  - loop
+		#proceed with the logic of whether this is a Master or Variant
+		#copy the rest of the execution, 
+		#output the results to a file name that I choose
+		#close the output file
+		outFileHandle.close()
+		batchFile.close()
 	
 	## Command line execution block
 	elif (sys.argv[1] == "command"):
