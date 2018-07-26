@@ -29,13 +29,10 @@ import json
 import logging
 import requests
 
-
-
 ##End package import section
 
 ##Set up logging for the program
 logging.basicConfig(filename='Hlsv1.log', level=logging.DEBUG)
-
 
 ##Class definitions for the playlist hierarchy
 class Playlist(object):
@@ -300,11 +297,6 @@ class Playlist(object):
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
 		return dCheck, json, uri, multiples
 		
-	
-	#def mSessionKey(self, validator):
-		#A Master Playlist MUST NOT contain more than one EXT-X-SESSION-KEY tag with the same
-		#METHOD, URI, IV, KEYFORMAT, and KEYFORMATVERSIONS attribute values.  No example in spec.
-		
 	def mMediaMaster(self, validator):
 		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
 		#a Master or Variant playlist.  They MUST only appear once in the playlist.  Additionally,
@@ -432,8 +424,7 @@ class Playlist(object):
 		logging.info("<<------------------------------++ Exiting vIFramesOnly")
 		return check, medSeg
 		
-						 # Can't specify a string as it will be null, so lists could be used
-	#suppliedURL = []	 # The URL supplied by the command line or batch file
+	#suppliedURL 		 # The string for URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
 	#playVersion         # Integer used to store playlist version, 0 if not used
 	checkResults = []	 # Used to store the contents of check results
@@ -972,8 +963,6 @@ def openURL(url):
 			print("Error: ", e)
 			logging.info("++---------->> openURL OSError: %s", e)
 			sys.exit(1)
-		
-
 #
 # End of openURL
 ####################################
@@ -1039,9 +1028,6 @@ def createMaster(conList, uRL):
 			logging.info("++---------->> variantObject contents: %s", variantObject.vContent[k])
 	logging.info("++------------------------->> Leaving createMaster")
 	return pList
-	
-
-
 #
 # End of createMaster
 ####################################
@@ -1064,11 +1050,6 @@ def createVariant(contenList, urL):
 	logging.info("++--------------->> Setting varURL: %s", varList.suppliedURL)
 	logging.info("++------------------------->> Leaving createVariant")
 	return varList
-	
-	#Note: eventually I will need to add other attributes
-	#regarding Variant playlists etc.
-
-
 #
 # End of createVariant
 ####################################
@@ -1124,10 +1105,6 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 		playList = createVariant(contentList, URL)
 	logging.info("++------------------------->> Leaving createPlaylist")
 	return playList
-		
-		
-
-
 #
 # End of createPlaylist
 ####################################
@@ -1333,9 +1310,6 @@ def main(argv):
 			# is a file on the computer, and we need to read lines.
 			
 			playlist = createPlaylist(resource, urlCheck, webCheck, url)
-			
-			
-			
 			
 			## The visitor needs to decide what to do with the playlist, and main just 
 			## needs to call the checks.  So, the check definition in Playlist() will
