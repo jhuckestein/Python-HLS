@@ -1241,10 +1241,12 @@ def main(argv):
 			
 			#Now process each line in the batch file containing playlist file URLs
 			for line in batchFile:
-				playListFile, valPlayL, wURL = openURL(line)
-				playlist = createPlaylist(playListFile, valPlayL, wURL, line)
+				inputLine = line.strip('\n')
+				playListFile, valPlayL, wURL = openURL(inputLine)
+				playlist = createPlaylist(playListFile, valPlayL, wURL, inputLine)
 				
 				#Add formatting to the output file so we know about the file
+				outFileHandle.write('<<----------Playlist Report---------->>\n')
 				thirdLine = ('The playlist was a Master =', playlist.master)
 				s3 = str(thirdLine)
 				outFileHandle.write(s3)
@@ -1297,7 +1299,7 @@ def main(argv):
 					outFileHandle.write('\n')
 				
 				#Now add some formatting to the output file
-				outFileHandle.write('<<----------End of Individual Playlist---------->>\n')
+				outFileHandle.write('<<--------------------End of Individual Playlist-------------------->>\n')
 				outFileHandle.write('\n')
 				
 				#Now close the playlist file handle
