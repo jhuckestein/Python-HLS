@@ -1223,6 +1223,11 @@ def main(argv):
 			outFileHandle.write(s4)
 			outFileHandle.write('\n')
 			
+			#Now take the check results and print them to the output file
+			for line in range(0, len(playlist.checkResults)):
+				outFileHandle.write(playlist.checkResults[line])
+				outFileHandle.write('\n')
+			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
 		
 		#then read in each line from the file  - loop
 		#run each of our checks
