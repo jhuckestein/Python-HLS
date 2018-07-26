@@ -1210,6 +1210,19 @@ def main(argv):
 			
 			#Create a Header in the output file
 			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
+			s2 = str(secondLine)
+			outFileHandle.write(s2)
+			outFileHandle.write('\n')
+			thirdLine = ('The playlist was a Master =', playlist.master)
+			s3 = str(thirdLine)
+			outFileHandle.write(s3)
+			outFileHandle.write('\n')
+			fourthLine = ('The given URL was =', playlist.suppliedURL)
+			s4 = str(fourthLine)
+			outFileHandle.write(s4)
+			outFileHandle.write('\n')
+			
 		
 		#then read in each line from the file  - loop
 		#run each of our checks
