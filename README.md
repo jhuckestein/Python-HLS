@@ -5,5 +5,11 @@ There are many validators available out on the web (specifically from Apple etc.
 
 Right now, the command line version is run like so:
    '>python HLSv1.py command filename/URL.m3u8'
+   '>python HLSv1.py batch somefile.txt'  : where somefile is a list of playlist files or URLs
    
 When the program runs a logging file named Hlsv1.log is created in the same directory which can be perused for debugging purposes.  The program will run in batch mode if "command" is substituted with "batch", and a valid text file with playlist URLs is given.  In successive iterations I will be changeing the report structure, and adding objects to make the output report in a nicer format.  If you have some ideas, or notice a bug feel free to contact me at jhuckestein@awardsolutions.com and I would be happy to entertain requests.
+
+Release Road-Map:
+   1) HLSv1.py - Basic program with all the pertinent checks : Completed
+   2) HLSv2.py - Expaned checks and object attributes for determining line numbers for failures etc.: Currently under Development
+   3) HLSv3.py - Development of a nicer appearance and more organized report structure: Not yet scheduled
