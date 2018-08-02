@@ -50,7 +50,7 @@ import requests
 ##End package import section
 
 ##Set up logging for the program
-logging.basicConfig(filename='Hlsv1.log', level=logging.DEBUG)
+logging.basicConfig(filename='Hlsv2.log', level=logging.DEBUG)
 
 ##Class definitions for the playlist hierarchy
 class Playlist(object):
@@ -80,17 +80,18 @@ class Playlist(object):
 		lineNums = []         #Keeps track of line numbers where multiple tags found
 		
 		for line in range(0, len(self.mContent)):
+			print('running masVersion check')
 			if self.mContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
 				logging.info("++---------->> #EXT-X-VERSION tag found on line %s", line)
 				lineNums.append(line)
 				version = int(self.mContent[line].strip('#EXT-X-VERSION:'))
-			if versionInstance > 1:
-				multiple = True
+		if versionInstance > 1:
+			multiple = True
 		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
 		logging.info("++---------->> Version of Master object = %s", version)
 		logging.info("++---------->> Leaving version check for Master object")
-		return multiple, version
+		return multiple, version, lineNums
 				
 		
 	def varVersion(self, validator):
@@ -489,6 +490,7 @@ class MasterPlaylist(Playlist):
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
 	mContent = []     #List of content from the original URL
+	verCkErrorLines = [] #Tracks which lines were errors for VersionCheck()
 	
 
 
@@ -547,10 +549,14 @@ class VersionCheck(Validator):
 		logging.info("++------------------------->> Beginning VersionCheck Validation")
 		pList.checkResults.append('<<-----Begin Version Checks----->>')
 		pList.checkResults.append('')
+		errorLines = []
 		if pList.master:
-			test, ver = pList.masVersion(self)
+			test, ver, errorLines = pList.masVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
 			if test:
+				for line in range(0, len(errorLines)):
+					pList.verCkErrorLines.append(errorLines[line])
+				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
 				logging.info("++---------->> HeaderCheck Master Validation FAILED")
