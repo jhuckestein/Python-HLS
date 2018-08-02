@@ -442,12 +442,19 @@ class Playlist(object):
 		logging.info("<<------------------------------++ Exiting vIFramesOnly")
 		return check, medSeg
 		
+	# BASIC DEFINITONS USED
 	#suppliedURL 		 # The string for URL supplied by the command line or batch file
 	#master = Bool 		 # True if a Master playlist, False if variant
 	#playVersion         # Integer used to store playlist version, 0 if not used
+	
+	# RELEASE-2 ADDITIONS
+	# ckHeader - A text string set by HeaderCheck() for checkHeader() results
+	
+	# OTHER ATTRIBUTES
 	checkResults = []	 # Used to store the contents of check results
 
 class VariantPlaylist(Playlist):
+	# BASIC DEFINITIONS:
 	# Has a list of URLs to media segments (or locally defined) that end in ".ts"
 	# Has #EXT-X-PLAYLIST-TYPE the playlist type (LIVE, EVENT, VOD)
 	# Has a header that starts with #EXTM3U
@@ -456,20 +463,28 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-TARGETDURATION which specifies the maximum media file duration
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
+	##########
+	
 	type = []  # EVENT,VOD,LIVE
 	vContent = []     #List of content from the original URL
 	
 	
 class MasterPlaylist(Playlist):
+	# BASIC DEFINITIONS:
 	# Has a header that starts with #EXTM3U
 	# Has a #EXT-X-STREAM-INF that has BANDWIDTH, RESOLUTION, & CODEC
 	# Line after above is the URL.ts
 	# Has a list of object references for each URL.ts media variant
 	# They have to be able to create objects of VariantPlaylist
 	
+	# RELEASE-2 ADDITONS:
+	# 
+	
+	# OTHER ATTRIBUTES:
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
 	mContent = []     #List of content from the original URL
+	vCkHeader = []    #Used by HeaderCheck() to store variant header failures
 
 
 ## This is where the visitors (check hierarchy) are defined
@@ -490,8 +505,10 @@ class HeaderCheck(Validator):   ## This check is universal to any playlist
 			result = pList.checkHeader(self)
 			if result:
 				pList.checkResults.append("PASSED: First line starts #EXTM3U")
+				pList.ckHeader = "PASSED: First line starts #EXTM3U"
 			else:
 				pList.checkResults.append("FAILED: First line starts #EXTM3U")
+				pList.ckHeader = "FAILED: First line should start with #EXTM3U"
 			pList.checkResults.append('')
 			pList.checkResults.append("<<-----End of Header Check----->>")
 			pList.checkResults.append('')
@@ -511,8 +528,10 @@ class HeaderCheck(Validator):   ## This check is universal to any playlist
 			result = pList.checkHeader(self)
 			if result:
 				pList.checkResults.append("PASSED: First line starts #EXTM3U")
+				pList.ckHeader = "PASSED: First line starts #EXTM3U"
 			else:
 				pList.checkResults.append("FAILED: First line starts #EXTM3U")
+				pList.ckHeader = "FAILED: First line should start with #EXTM3U"
 			pList.checkResults.append('')
 			pList.checkResults.append("<<-----End of Header Check----->>")
 			pList.checkResults.append('')
