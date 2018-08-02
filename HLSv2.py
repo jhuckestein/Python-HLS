@@ -78,6 +78,7 @@ class Playlist(object):
 		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
 		version = 0           #integer for extracted version number
 		lineNums = []         #Keeps track of line numbers where multiple tags found
+		lineNums.clear
 		
 		for line in range(0, len(self.mContent)):
 			print('running masVersion check')
@@ -101,17 +102,21 @@ class Playlist(object):
 		multiple = False      #Assumed false unless versionInstance > 1
 		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
 		version = 0           #integer for extracted version number
+		lineNums = []         #Keeps track of line numbers where multiple tags found
+		lineNums.clear
 		
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
+				logging.info("++---------->> #EXT-X-VERSION tag found on line %s", line)
+				lineNums.append(line)
 				version = int(self.vContent[line].strip('#EXT-X-VERSION:'))
 		if versionInstance > 1:
 			multiple = True
 		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
 		logging.info("++---------->> Version of Variant object = %s", version)
 		logging.info("++---------->> Leaving version check for Variant object")
-		return multiple, version
+		return multiple, version, lineNums
 		
 	def mCompVersion(self, validator):
 		# 1) Must be 7+ if Master has SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA (ERROR)
@@ -469,10 +474,14 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-TARGETDURATION which specifies the maximum media file duration
 	# Has #EXT-X-VERSION which is the compatibility version of the playlist file
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
-	##########
 	
+	# RELEASE-2 ADDITIONS:
+	#
+	
+	# OTHER ATTRIBUTES:
 	type = []  # EVENT,VOD,LIVE
 	vContent = []     #List of content from the original URL
+	verCkErrorLines = []  #Lists the lines tags were found for VersionCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -550,6 +559,8 @@ class VersionCheck(Validator):
 		pList.checkResults.append('<<-----Begin Version Checks----->>')
 		pList.checkResults.append('')
 		errorLines = []
+		errorLines.clear
+		
 		if pList.master:
 			test, ver, errorLines = pList.masVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
@@ -570,9 +581,12 @@ class VersionCheck(Validator):
 				verCheck = VersionCheck()
 				pList.variantList[variant].accept(verCheck)
 		else:
-			test, ver = pList.varVersion(self)
+			test, ver, errorLines = pList.varVersion(self)
 			pList.playVersion = ver      #Attribute of the object to be used for compatibility
 			if test:
+				for line in range(0, len(errorLines)):
+					pList.verCkErrorLines.append(errorLines[line])
+				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
 				logging.info("++---------->> HeaderCheck Variant Validation FAILED")
