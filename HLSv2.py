@@ -77,11 +77,16 @@ class Playlist(object):
 		multiple = False      #boolean result for check 1)
 		versionInstance = 0   #integer for number of EXT-X-VERSION tags found
 		version = 0           #integer for extracted version number
+		lineNums = []         #Keeps track of line numbers where multiple tags found
 		
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
+				logging.info("++---------->> #EXT-X-VERSION tag found on line %s", line)
+				lineNums.append(line)
 				version = int(self.mContent[line].strip('#EXT-X-VERSION:'))
+			if versionInstance > 1:
+				multiple = True
 		logging.info("++---------->> Number of EXT-X-VERSION tags found = %s", versionInstance)
 		logging.info("++---------->> Version of Master object = %s", version)
 		logging.info("++---------->> Leaving version check for Master object")
