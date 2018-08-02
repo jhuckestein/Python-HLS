@@ -484,7 +484,7 @@ class MasterPlaylist(Playlist):
 	variantList = []  #List of variant objects
 	variantURLs = []  #List of URLs for each variant object
 	mContent = []     #List of content from the original URL
-	vCkHeader = []    #Used by HeaderCheck() to store variant header failures
+	
 
 
 ## This is where the visitors (check hierarchy) are defined
@@ -514,11 +514,8 @@ class HeaderCheck(Validator):   ## This check is universal to any playlist
 			pList.checkResults.append('')
 			#Now we need to call HeaderCheck for all the Variant objects in pList.variantList
 			for variant in range(0, len(pList.variantList)):
-				#for i in range(0, len(pList.variantList[variant].vContent)):
-					#print(pList.variantList[variant].vContent[i])
 				vHCheck = HeaderCheck()
-				nr = pList.variantList[variant].accept(vHCheck)
-				#print('Result of variant check = ', nr)
+				pList.variantList[variant].accept(vHCheck)
 		else:
 			#In the event that a Master Playlist calls the for loop above, 
 			logging.info("++--------------->> HeaderCheck Variant Object")
