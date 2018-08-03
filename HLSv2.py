@@ -164,6 +164,8 @@ class Playlist(object):
 		check6 = True  #Status of EXT-X-MAP does not contain EXT-X-I-FRAMES-ONLY
 		check7 = True  #Status of EXT-X-ALLOW-CACHE removed
 		iFrames = False #True if the EXT-X-I-FRAMES-ONLY tag is found
+		lineNums = []
+		lineNums.clear
 		
 		#Fist iterate through the list to find if certain tags exist
 		for line in range(0, len(self.vContent)):
@@ -173,26 +175,33 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-KEY:IV'):
 				check2 = False
+				lineNums.append('EXT-X-KEY:IV tag on line: ' + str(line))
 			elif self.vContent[line].startswith('#EXTINF:'):
 				tag = self.vContent[line].strip('#EXTINF:')
 				if self.playVersion < 3 and '.' in tag:   #Decimals not allowed below version-3
 					if tag.find('.') < 3:    #EXTINF:<duration>,<title> and title could have period
 						check3 = False
+						lineNums.append('EXTINF tag with decimals & Version less than 3.0  on line= ' + str(line))
 			elif self.vContent[line].startswith('#EXT-X-BYTERANGE:') and self.playVersion < 4:
 				check4 = False
+				lineNums.append('EXT-X-BYTERANGE tag & Version < 4 on line= ' + str(line))
 			elif self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY') and self.playVersion < 4:
 				check4 = False
+				lineNums.append('EXT-X-I-FRAMES-ONLY tag & Version < 4 on line= ' + str(line))
 			elif self.vContent[line].startswith('#EXT-X-MAP'):
 				if iFrames:
 					if self.playVersion < 5:
 						check5 = False
+						lineNums.append('EXT-X-MAP tag & I-Frames with Version < 5 on line= ' + str(line))
 				else:
 					if self.playVersion < 6:
 						check6 = False
+						lineNums.append('EXT-X-MAP tag without I-Frames & Version < 6 on line= ' + str(line))
 			elif self.vContent[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
 				check7 = False
+				lineNums.append('EXT-X-ALLOW-CACHE tag & Version 7+ on line= ' + str(line))
 			logging.info("++------------------------------>> Leaving vCompVersion")
-			return check2, check3, check4, check5, check6, check7
+			return check2, check3, check4, check5, check6, check7, lineNums
 			
 	def mMixCheck(self, validator):
 	#This check determines if Master Playlists contain Media or Variant tags
@@ -500,6 +509,9 @@ class MasterPlaylist(Playlist):
 	
 	# RELEASE-2 ADDITONS:
 	# mVersionCk = Text results of VersionCheck()
+	# compService = Text results of SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA in VerCompatCheck()
+	# compProgram = Text results of PROGRAM-ID attribute for EXT-X-STREAM-INF removed
+	# compCache = Text results of Version 7+ EXT-X-ALLOW-CACHE removed
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -507,6 +519,8 @@ class MasterPlaylist(Playlist):
 	variantURLs = []  #List of URLs for each variant object
 	mContent = []     #List of content from the original URL
 	verCkErrorLines = [] #Tracks which lines were errors for VersionCheck()
+	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
+	
 	
 
 
@@ -625,25 +639,35 @@ class VerCompatCheck(Validator):
 			logging.info("++---------->> Master compatProgram = %s", compatProgram)
 			logging.info("++---------->> Master compatCache = %s", compatCache)
 			pList.checkResults.append('Master Version Compatibility Checks for ' + pList.suppliedURL)
+			#If there was an error, then load up the error line list
+			if not compatService or not compatProgram or not compatCache:
+				for line in range(0, len(errorLines)):
+					pList.verCompCkErrorLines.append(errorLines[line])
 			if compatService:
 				pList.checkResults.append('PASSED: SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA')
+				pList.compService = 'PASSED: SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA'
 			else:
 				pList.checkResults.append('ERROR: Version must be 7+ for SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA')
+				pList.compService = 'ERROR: Version must be 7+ for SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA'
 			if compatProgram:
 				pList.checkResults.append('PASSED: PROGRAM-ID attribute for EXT-X-STREAM-INF removed')
 				pList.checkResults.append('PASSED: PROGRAM-ID attribute for EXT-X-I-FRAME-STREAM-INF removed')
+				pList.compProgram = 'PASSED: PROGRAM-ID attribute for EXT-X-STREAM and EXT-X-I-FRAME-STREAM-INF removed'
 			else:
 				pList.checkResults.append('WARNING: Version 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF are removed')
+				pList.compProgram = 'WARNING: Version 6+ PROGRAM-ID attribute for EXT-X-STREAM-INF and EXT-X-I-FRAME-STREAM-INF are removed'
 			if compatCache:
 				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
+				pList.compCache = 'PASSED: Version 7+ EXT-X-ALLOW-CACHE removed'
 			else:
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed')
+				pList.compCache = 'ERROR: Version 7+ EXT-X-ALLOW-CACHE is removed'
 			#Now, the contents of the variantList need to be version compatibility checked
 			for variant in range(0, len(pList.variantList)):
 				versCheck = VerCompatCheck()
 				pList.variantList[variant].accept(versCheck)
 		else:   #Case where we have a Variant Playlist
-			compCkV2, compCkV3, compCkV4, compCkV5, compCkV6, compCkV7 = pList.vCompVersion(self)
+			compCkV2, compCkV3, compCkV4, compCkV5, compCkV6, compCkV7, errorLines = pList.vCompVersion(self)
 			logging.info("++---------->> Variant Version Compatibility Check")
 			logging.info("++---------->> Variant compCkV2 = %s", compCkV2)
 			logging.info("++---------->> Variant compCkV3 = %s", compCkV3)
