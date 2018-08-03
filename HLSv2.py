@@ -81,7 +81,6 @@ class Playlist(object):
 		lineNums.clear
 		
 		for line in range(0, len(self.mContent)):
-			print('running masVersion check')
 			if self.mContent[line].startswith('#EXT-X-VERSION:'):
 				versionInstance += 1
 				logging.info("++---------->> #EXT-X-VERSION tag found on line %s", line)
@@ -127,22 +126,28 @@ class Playlist(object):
 		compService = True  #Validation status for 1) - SERVICE values for INSTREAM-ID
 		compProgram = True  #Validation status for 2) - PROGRAM-ID attribute
 		compCache = True    #Validation status for 3) - EXT-X-ALLOW-CACHE
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-MEDIA'):
 				if 'INSTREAM-ID' and 'SERVICE' in self.mContent[line]:
 					if self.playVersion < 7:
 						compService = False
+						lineNums.append('INSTREAM-ID and SERVICE require version 7+ on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-STREAM-INF'):
 				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
+					lineNums.append('EXT-X-STREAM-INF used with PROGRAM-ID requires version 6+ line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF'):
 				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag used with PROGRAM-ID requires version 6+ line= ' + str(line))
 			elif self.playVersion >= 7:
 				if 'EXT-X-ALLOW-CACHE' in self.mContent[line]:
 					compCache = False
+					lineNums.append('EXT-X-ALLOW-CACHE tag NOT allowed in version 7+ line= ' + str(line))
 		logging.info("++------------------------------>> Leaving mCompVersion")
-		return compService, compProgram, compCache
+		return compService, compProgram, compCache, lineNums
 	
 	def vCompVersion(self, validator):
 		# Must be 2+ if IV attribute of EXT-X-KEY:IV tag(ERROR)
@@ -476,6 +481,7 @@ class VariantPlaylist(Playlist):
 	# Has #EXT-X-ENDLIST in VOD and possibly in EVENT
 	
 	# RELEASE-2 ADDITIONS:
+	# vVersionCk = Text results of VersionCheck()
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -493,7 +499,8 @@ class MasterPlaylist(Playlist):
 	# They have to be able to create objects of VariantPlaylist
 	
 	# RELEASE-2 ADDITONS:
-	# 
+	# mVersionCk = Text results of VersionCheck()
+	#
 	
 	# OTHER ATTRIBUTES:
 	variantList = []  #List of variant objects
@@ -570,10 +577,12 @@ class VersionCheck(Validator):
 				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+				pList.mVersionCk = 'EXT-X-VERSION test: Failed / multiple tags'
 				logging.info("++---------->> HeaderCheck Master Validation FAILED")
 			else:
 				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('PASSED: EXT-X-VERSION test')
+				pList.mVersionCk = 'PASSED: EXT-X-VERSION test'
 				pList.checkResults.append('VERSION = ' + str(ver))
 				logging.info("++---------->> HeaderCheck Master Validation PASSED: " + str(pList.playVersion))
 			#Now, the version of the variantList contents need to be checked
@@ -589,10 +598,12 @@ class VersionCheck(Validator):
 				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
+				pList.vVersionCk = 'EXT-X-VERSION test: Failed / multiple tags'
 				logging.info("++---------->> HeaderCheck Variant Validation FAILED")
 			else:
 				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Passed')
+				pList.vVersionCk = 'EXT-X-VERSION test: Passed'
 				pList.checkResults.append('VERSION = ' + str(ver))
 				logging.info("++---------->> HeaderCheck Variant Validation PASSED: " + str(pList.playVersion))
 		pList.checkResults.append('')
@@ -604,8 +615,11 @@ class VerCompatCheck(Validator):
 		logging.info("++------------------------->> Beginning Version Compatibility Check Validation")
 		pList.checkResults.append('<<-----Begin Compatibility Checks----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
+		
 		if pList.master:
-			compatService, compatProgram, compatCache = pList.mCompVersion(self)
+			compatService, compatProgram, compatCache, errorLines = pList.mCompVersion(self)
 			logging.info("++---------->> Master Version Compatibility Check")
 			logging.info("++---------->> Master compatService = %s", compatService)
 			logging.info("++---------->> Master compatProgram = %s", compatProgram)
