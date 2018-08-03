@@ -491,12 +491,19 @@ class VariantPlaylist(Playlist):
 	
 	# RELEASE-2 ADDITIONS:
 	# vVersionCk = Text results of VersionCheck()
-	#
+	# compCheckV2 = Text results Version 2+ if EXT-X-KEY:IV tag
+	# compCheckV3 = Text results Version 3+ if floating point EXTINF values
+	# compCheckV4 = Text results Version 4+ EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags
+	# compCheckV5 = Text results Version 5+ using EXT-X-MAP
+	# compCheckV6 = Text results Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY
+	# compCheckV7 = Text results Version 7+ EXT-X-ALLOW-CACHE removed
+	# 
 	
 	# OTHER ATTRIBUTES:
 	type = []  # EVENT,VOD,LIVE
 	vContent = []     #List of content from the original URL
 	verCkErrorLines = []  #Lists the lines tags were found for VersionCheck()
+	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -676,30 +683,45 @@ class VerCompatCheck(Validator):
 			logging.info("++---------->> Variant compCkV6 = %s", compCkV6)
 			logging.info("++---------->> Variant compCkV7 = %s", compCkV7)
 			pList.checkResults.append('Variant Version Compatibility Checks for ' + pList.suppliedURL)
+			if not compCkV2 or not compCkV3 or not compCkV4 or not compCkV5 or not compCkV6 or not compCkV7:
+				for line in range(0, len(errorLines)):
+					pList.verCompCkErrorLines.append(errorLines[line])
 			if compCkV2:
 				pList.checkResults.append('PASSED: Version 2+ if EXT-X-KEY:IV tag')
+				pList.compCheckV2 = 'PASSED: Version 2+ if EXT-X-KEY:IV tag'
 			else:
 				pList.checkResults.append('ERROR: Must be 2+ if IV attribute of EXT-X-KEY:IV tag')
+				pList.compCheckV2 = 'ERROR: Must be 2+ if IV attribute of EXT-X-KEY:IV tag'
 			if compCkV3:
 				pList.checkResults.append('PASSED: Version 3+ if floating point EXTINF values')
+				pList.compCheckV3 = 'PASSED: Version 3+ if floating point EXTINF values'
 			else:
 				pList.checkResults.append('ERROR: Must be 3+ if floating point EXTINF values')
+				pList.compCheckV3 = 'ERROR: Must be 3+ if floating point EXTINF values'
 			if compCkV4:
 				pList.checkResults.append('PASSED: Version 4+ EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags')
+				pList.compCheckV4 = 'PASSED: Version 4+ EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags'
 			else:
 				pList.checkResults.append('ERROR: Version 4+ using EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags')
+				pList.compCheckV4 = 'ERROR: Version 4+ using EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags'
 			if compCkV5:
 				pList.checkResults.append('PASSED: Version 5+ using EXT-X-MAP')
+				pList.compCheckV5 = 'PASSED: Version 5+ using EXT-X-MAP'
 			else:
 				pList.checkResults.append('ERROR: Version 5+ using EXT-X-MAP')
+				pList.compCheckV5 = 'ERROR: Version 5+ using EXT-X-MAP'
 			if compCkV6:
 				pList.checkResults.append('PASSED: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY')
+				pList.compCheckV6 = 'PASSED: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY'
 			else:
 				pList.checkResults.append('ERROR: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY')
+				pList.compCheckV6 = 'ERROR: Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY'
 			if compCkV7:
 				pList.checkResults.append('PASSED: Version 7+ EXT-X-ALLOW-CACHE removed')
+				pList.compCheckV7 = 'PASSED: Version 7+ EXT-X-ALLOW-CACHE removed'
 			else:
 				pList.checkResults.append('ERROR: Version 7+ EXT-X-ALLOW-CACHE removed')
+				pList.compCheckV7 = 'ERROR: Version 7+ EXT-X-ALLOW-CACHE removed'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----End of Compatibility Checks----->>')
 		pList.checkResults.append('')
