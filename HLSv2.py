@@ -207,22 +207,31 @@ class Playlist(object):
 	#This check determines if Master Playlists contain Media or Variant tags
 		logging.info("++------------------------------>> Entering mMixCheck")
 		mixedTags = False
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXTINF:') or self.mContent[line].startswith('#EXT-X-BYTERANGE:'):
 				mixedTags = True
+				lineNums.append('#EXTINF/#EXT-X-BYTERANGE found on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY:') or self.mContent[line].startswith('#EXT-X-KEY:'):
 				mixedTags = True
+				lineNums.append('#EXT-X-DISCONTINUITY/#EXT-X-KEY found on line= ' + str(line))
 			elif self.mContent[line].startswith('EXT-X-MAP:') or self.mContent[line].startswith('#EXT-X-PROGRAM-DATE-TIME:'):
 				mixedTags = True
+				lineNums.append('EXT-X-MAP/EXT-X-PROGRAM-DATE-TIME found on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-DATERANGE:') or self.mContent[line].startswith('#EXT-X-TARGETDURATION:'):
 				mixedTags = True
+				lineNums.append('EXT-X-DATERANGE/EXT-X-TARGETDURATION found on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-MEDIA-SEQUENCE:') or self.mContent[line].startswith('#EXT-X-ENDLIST:'):
 				mixedTags = True
+				lineNums.append('EXT-X-MEDIA-SEQUENCE/EXT-X-ENDLIST found on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-PLAYLIST-TYPE:') or self.mContent[line].startswith('#EXT-X-I-FRAMES-ONLY:'):
 				mixedTags = True
+				lineNums.append('EXT-X-PLAYLIST-TYPE/EXT-X-I-FRAMES-ONLY found on line= ' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY-SEQUENCE:'):
 				mixedTags = True
-		return mixedTags
+				lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str(line))
+		return mixedTags, lineNums
 		logging.info("++------------------------------>> Exiting  mMixCheck")
 			
 	def vMixCheck(self, validator):
@@ -519,6 +528,7 @@ class MasterPlaylist(Playlist):
 	# compService = Text results of SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA in VerCompatCheck()
 	# compProgram = Text results of PROGRAM-ID attribute for EXT-X-STREAM-INF removed
 	# compCache = Text results of Version 7+ EXT-X-ALLOW-CACHE removed
+	# mTagsResult = Text results of MixTagsCheck
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -527,6 +537,7 @@ class MasterPlaylist(Playlist):
 	mContent = []     #List of content from the original URL
 	verCkErrorLines = [] #Tracks which lines were errors for VersionCheck()
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
+	mTagsErrorLines = []  #List of error lines from MixTagsCheck()
 	
 	
 
@@ -732,12 +743,18 @@ class MixTagsCheck(Validator):
 		logging.info("++------------------------->> Mixed Tag Validation")
 		pList.checkResults.append('<<-----Mixed Tags Checks----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
-			test = pList.mMixCheck(self)
+			test, errorLines = pList.mMixCheck(self)
 			if test:
 				pList.checkResults.append('<<----- FAILED: Master Playlist contains Media/Variant tags ')
+				for line in range(0, len(errorLines)):
+					pList.mTagsErrorLines.append(errorLines[line])
+				pList.mTagsResult = 'FAILED: Master Playlist contains Media/Variant tags'
 			else:
 				pList.checkResults.append('<<----- PASSED: Master Playlist only contains Master tags ')
+				pList.mTagsResult = 'PASSED: Master Playlist only contains Master tags'
 		else:
 			test = pList.vMixCheck(self)
 			if test:
