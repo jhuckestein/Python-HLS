@@ -277,11 +277,14 @@ class Playlist(object):
 	#This is a violation, and an ERROR.
 		logging.info("++----------------------------->> Entering vStreamInf")
 		checkV = False
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
 				checkV = True
+				lineNums.append('EXT-X-STREAM-INF found on line= ' + str(line))
 		logging.info("++----------------------------->> Exiting vStreamInf")
-		return checkV
+		return checkV, lineNums
 	
 	def mIFrame(self, validator):
 	#This check applies to Master Playlists and if this tag is used it must have
@@ -516,6 +519,7 @@ class VariantPlaylist(Playlist):
 	# compCheckV6 = Text results Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY
 	# compCheckV7 = Text results Version 7+ EXT-X-ALLOW-CACHE removed
 	# vTagsResult = Text result from MixTagsCheck()
+	# vResultTag = Text result from StreamInfCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -524,6 +528,7 @@ class VariantPlaylist(Playlist):
 	verCkErrorLines = []  #Lists the lines tags were found for VersionCheck()
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
 	vTagsErrorLines = []   #Tracks which lines were errors for MixTagsCheck()
+	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -809,9 +814,14 @@ class StreamInfCheck(Validator):
 				pList.checkResults.append('<<----- FAILED: BANDWIDTH attribute missing in tag')
 				pList.mResultBW = 'FAILED: BANDWIDTH attribute missing in tag'
 		else:
-			resultTag = pList.vStreamInf(self)
+			resultTag, errorLines = pList.vStreamInf(self)
 			if resultTag:
 				pList.checkResults.append('<<----- FAILED: Variant> contains EXT-X-STREAM-INF tag')
+				pList.vResultTag = 'FAILED: Variant> contains EXT-X-STREAM-INF tag'
+				for line in range(0, len(errorLines)):
+					pList.vStreamInfLines.append(errorLines[line])
+			else:
+				pList.vResultTag = 'PASSED: Variant EXT-X-STREAM-INF tag check'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-STREAM-INF Tag Checks----->>')
 		pList.checkResults.append('')
