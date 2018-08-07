@@ -238,14 +238,19 @@ class Playlist(object):
 	#This check determines if Variant/Media playlists contain Master tags
 		logging.info("++------------------------------>> Entering vMixCheck")
 		mixedTags = False
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-MEDIA:') or self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
 				mixedTags = True
+				lineNums.append('EXT-X-MEDIA/EXT-X-STREAM-INF found on line= ' + str(line))
 			if self.vContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:') or self.vContent[line].startswith('#EXT-X-SESSION-DATA:'):
 				mixedTags = True
+				lineNums.append('EXT-X-I-FRAME-STREAM-INF/EXT-X-SESSION-DATA found on line= ' + str(line))
 			if self.vContent[line].startswith('#EXT-X-SESSION-KEY:'):
 				mixedTags = True
-		return mixedTags
+				lineNums.append('EXT-X-SESSION-KEY found on line= ' + str(line))
+		return mixedTags, lineNums
 		logging.info("++------------------------------>> Exiting  vMixCheck")
 		
 	def mStreamInf(self, validator):
@@ -506,6 +511,7 @@ class VariantPlaylist(Playlist):
 	# compCheckV5 = Text results Version 5+ using EXT-X-MAP
 	# compCheckV6 = Text results Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY
 	# compCheckV7 = Text results Version 7+ EXT-X-ALLOW-CACHE removed
+	# vTagsResult = Text result from MixTagsCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -513,6 +519,7 @@ class VariantPlaylist(Playlist):
 	vContent = []     #List of content from the original URL
 	verCkErrorLines = []  #Lists the lines tags were found for VersionCheck()
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
+	vTagsErrorLines = []   #Tracks which lines were errors for MixTagsCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -756,11 +763,15 @@ class MixTagsCheck(Validator):
 				pList.checkResults.append('<<----- PASSED: Master Playlist only contains Master tags ')
 				pList.mTagsResult = 'PASSED: Master Playlist only contains Master tags'
 		else:
-			test = pList.vMixCheck(self)
+			test, errorLines = pList.vMixCheck(self)
 			if test:
 				pList.checkResults.append('<<----- FAILED: Media/Variant Playlist contains Master tags ')
+				for line in range(0, len(errorLines)):
+					pList.vTagsErrorLines.append(errorLines[line])
+				pList.vTagsResult = 'FAILED: Media/Variant Playlist contains Master tags'
 			else:
 				pList.checkResults.append('<<----- PASSED: Media/Variant only contains Media/Variant tags ')
+				pList.vTagsResult = 'PASSED: Media/Variant only contains Media/Variant tags'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----Mixed Tags Checks----->>')
 		pList.checkResults.append('')
