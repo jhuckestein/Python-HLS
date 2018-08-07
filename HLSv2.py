@@ -292,14 +292,18 @@ class Playlist(object):
 		logging.info("++----------------------------->> Entering mIFrame")
 		bwAttr = True
 		uriAttr = True
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:'):
 				if self.mContent[line].count('BANDWIDTH') < 1:
 					bwAttr = False
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing BANDWIDTH on line= ' + str(line))
 				if self.mContent[line].count('URI') < 1:
 					uriAttr = False
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing URI on line= ' + str(line))
 		logging.info("<<-----------------------------++ Exiting mIFrame")
-		return bwAttr, uriAttr
+		return bwAttr, uriAttr, lineNums
 		
 	def mSessionData(self, validator):
 	#This check applies to Master Playlists and if this tag is used it must have
@@ -312,32 +316,48 @@ class Playlist(object):
 		missing = False
 		multiples = False
 		tagList = []   #used to keep track of lines with the tag for multiples portion
+		tagList.clear
 		possibleMults = [] #list of possible multiples
+		possibleMults.clear
 		dIDList = []       #Used to keep track of DATA-ID values for multiple tags
+		dIDList.clear
 		langList = []      #Used to keep track of LANGUAGE values for multiples
+		langList.clear
 		iterList = []      #Working list used for parsing possible multiple tags
+		iterList.clear
+		multiLines = []    #Keeps track of DATA-ID:LANGUAGE lines
+		multiLines.clear
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-SESSION-DATA'):
 				#If you have the tag DATA-ID must be present
 				if not 'DATA-ID' in self.mContent[line]:
 					dCheck = True
+					lineNums.append('EXT-X-SESSION-DATA Must have DATA-ID attribute on line= ' + str(line))
 				#If you have a VALUE it must be json formatted
 				if 'VALUE' in self.mContent[line]:
 					if 'URI' in self.mContent[line]:
 						uri = True
+						lineNums.append('VALUE may not be used with URI line= ' + str(line))
 				if 'URI' in self.mContent[line]:
 					if not '.json' in self.mContent[line]:
 						json = True
+						lineNums.append('URI MUST be JSON formatted line= ' + str(line))
 				#VALUE not found, so URI must be present
 				elif not 'URI' in self.mContent[line]:
 					missing = True
+					lineNums.append('EXT-X-SESSION-DATA Must have URI formatted as JSON or a VALUE line= ' + str(line))
 				tagList.append(self.mContent[line])
+				multiLines.append(line)
 		if len(tagList) > 0:  #If no tags found not an issue
 			logging.info("++------------------->> mSessionData possible multiples")
 			#Filter out all of the possible multiple DATA-ID:LANGUAGE tags
 			for l in range(0, len(tagList)):
 				if 'DATA-ID' in tagList[l] and 'LANGUAGE' in tagList[l]:
 					possibleMults.append(tagList[l])
+				else:
+					multiLines.pop(l)  #If not a match, remove the line number from the list
 			#Current logic: now that we have a list of possible multiples we need to split(")
 			#each line to extract the first and third elements.  If that set matches another
 			#set, then we have a multiple DATA-ID and LANGUAGE and multiples is set to True.
@@ -356,10 +376,12 @@ class Playlist(object):
 				for j in range(k+1, len(dIDList)):
 					if dIDList[k] == dIDList[j] and langList[k] == langList[j]:
 						multiples = True
+			if multiples:
+				lineNums.append('DATA-ID:LANGUAGE Lines to check for duplicates= ' + str(multiLines))
 						
 			logging.info("<<-------------------++ mSessionData possible multiples")
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
-		return dCheck, json, uri, multiples
+		return dCheck, json, uri, multiples, lineNums
 		
 	def mMediaMaster(self, validator):
 		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
@@ -547,6 +569,12 @@ class MasterPlaylist(Playlist):
 	# mTagsResult = Text results of MixTagsCheck
 	# mResultLine = Text result of EXT-X-STREAM-INF tag followed by URI
 	# mResultBW = Text result of BANDWIDTH attribute present in tag EXT-X-STREAM-INF
+	# pList.mBWidth = Text result of Bandwidth attribute present for IFrameCheck()
+	# pList.mURI = Text result of URI attribute present for IFrameCheck()
+	# mIDCheck = Text result of EXT-X-SESSION-DATA tag DATA-ID attribute from SessionDataCheck()
+	# mJSONCk = Text result of URI attribute JSON formatted from SessionDataCheck()
+	# mURICk = Text result of both VALUE and URI attribute from SessionDataCheck()
+	# mURI = Text result of URI attribute from SessionDataCheck()
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -557,6 +585,8 @@ class MasterPlaylist(Playlist):
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
 	mTagsErrorLines = []  #List of error lines from MixTagsCheck()
 	mStreamInfLines = []  #List of error lines from StreamInfCheck()
+	mIFrameLines = []  #List of error lines from IFrameCheck()
+	mSessionDataLines = [] #List of error lines from SessionDataCheck()
 	
 
 
@@ -833,14 +863,23 @@ class IFrameCheck(Validator):
 		logging.info("++------------------------->> EXT-X-I-FRAME-STREAM-INF Tag Validation")
 		pList.checkResults.append('<<-----EXT-X-I-FRAME-STREAM-INF Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
-			bWidth, uri = pList.mIFrame(self)
+			bWidth, uri, errorLines = pList.mIFrame(self)
+			if not bWidth or not uri:
+				for line in range(0, len(errorLines)):
+					pList.mIFrameLines.append(errorLines[line])
 			if not bWidth:
 				pList.checkResults.append('<<-----FAILED: BANDWIDTH attribute missing in tag')
+				pList.mBWidth = 'FAILED: BANDWIDTH attribute missing in tag'
 			if not uri:
 				pList.checkResults.append('<<-----FAILED: URI attribute missing')
+				pList.mURI = 'FAILED: URI attribute missing'
 			if bWidth and uri:
 				pList.checkResults.append('<<-----PASSED: BANDWIDTH and URI tags present')
+				pList.mBWidth = 'PASSED: Bandwidth attribute present'
+				pList.mURI = 'PASSED: URI attribute present'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-I-FRAME-STREAM-INF Tag Validation----->>')
 		pList.checkResults.append('')
@@ -853,24 +892,37 @@ class SessionDataCheck(Validator):
 		logging.info("++------------------------->> EXT-X-SESSION-DATA Tag Validation")
 		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
-			idCheck, jsonCk, uriCk, multCk = pList.mSessionData(self)
+			idCheck, jsonCk, uriCk, multCk, errorLines = pList.mSessionData(self)
+			if idCheck or jsonCk or uriCk or multCk:
+				for line in range(0, len(errorLines)):
+					pList.mSessionDataLines.append(errorLines[line])
 			if idCheck:
 				pList.checkResults.append('<<-----FAILED: EXT-X-SESSION-DATA tag missing DATA-ID attribute')
+				pList.mIDCheck = 'FAILED: EXT-X-SESSION-DATA tag missing DATA-ID attribute'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-SESSION-DATA::DATA-ID check')
+				pList.mIDCheck = 'PASSED: EXT-X-SESSION-DATA::DATA-ID check'
 			if jsonCk:
 				pList.checkResults.append('<<-----FAILED: URI attribute not JSON formatted')
+				pList.mJSONCk = 'FAILED: URI attribute not JSON formatted'
 			else:
 				pList.checkResults.append('<<-----PASSED: JSON formatting check')
+				pList.mJSONCk = 'PASSED: JSON formatting check'
 			if uriCk:
 				pList.checkResults.append('<<-----FAILED: TAG may NOT have VALUE and URI attribute')
+				pList.mURICk = 'FAILED: TAG may NOT have VALUE and URI attribute'
 			else:
 				pList.checkResults.append('<<-----PASSED: VALUE/URI check')
+				pList.mURICk = 'PASSED: VALUE/URI check'
 			if multCk:
 				pList.checkResults.append('<<-----FAILED: Multiple DATA-ID attributes with same LANGUAGE')
+				pList.mMultCk = 'FAILED: Multiple DATA-ID attributes with same LANGUAGE'
 			else:
-				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check') 
+				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check')
+				pList.mMultCk = 'PASSED: Multiple DATA-ID/LANGUAGE check'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
 		pList.checkResults.append('')
