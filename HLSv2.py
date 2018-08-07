@@ -259,14 +259,18 @@ class Playlist(object):
 		logging.info("++----------------------------->> Entering mStreamInf")
 		nextLine = False  #Will be set true if next line does not contain .m3u8
 		bwAttr = True     #Will be set to false if no ATTRIBUTE in tag
+		lineNums = []
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-STREAM-INF:'):
 				if self.mContent[line].count('BANDWIDTH') < 1:
 					bwAttr = False
+					lineNums.append('EXT-X-STREAM-INF tag does NOT have BANDWIDTH attribute line= ' + str(line))
 				if  not self.mContent[line + 1].endswith('.m3u8'):
 					nextLine = True
+					lineNums.append('EXT-X-STREAM-INF tag NOT followed by URI on line= ' + str(line))
 		logging.info("++----------------------------->> Exiting mStreamInf")
-		return nextLine, bwAttr
+		return nextLine, bwAttr, lineNums
 		
 	def vStreamInf(self, validator):
 	#This check looks to see if the EXT-X-STREAM-INF tag is present in a variant file.
@@ -536,6 +540,8 @@ class MasterPlaylist(Playlist):
 	# compProgram = Text results of PROGRAM-ID attribute for EXT-X-STREAM-INF removed
 	# compCache = Text results of Version 7+ EXT-X-ALLOW-CACHE removed
 	# mTagsResult = Text results of MixTagsCheck
+	# mResultLine = Text result of EXT-X-STREAM-INF tag followed by URI
+	# mResultBW = Text result of BANDWIDTH attribute present in tag EXT-X-STREAM-INF
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -545,7 +551,7 @@ class MasterPlaylist(Playlist):
 	verCkErrorLines = [] #Tracks which lines were errors for VersionCheck()
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
 	mTagsErrorLines = []  #List of error lines from MixTagsCheck()
-	
+	mStreamInfLines = []  #List of error lines from StreamInfCheck()
 	
 
 
@@ -783,16 +789,25 @@ class StreamInfCheck(Validator):
 		logging.info("++------------------------->> EXT-X-STREAM-INF Tag Validation")
 		pList.checkResults.append('<<-----EXT-X-STREAM-INF Tag Checks----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
-			resultLine, resultBW = pList.mStreamInf(self)
+			resultLine, resultBW, errorLines = pList.mStreamInf(self)
+			if resultLine or not resultBW:
+				for line in range(0, len(errorLines)):
+					pList.mStreamInfLines.append(errorLines[line])
 			if resultLine:
 				pList.checkResults.append('<<----- FAILED: Master> EXT-X-STREAM-INF tag not followed by URI')
+				pList.mResultLine = 'FAILED: Master> EXT-X-STREAM-INF tag not followed by URI'
 			else:
 				pList.checkResults.append('<<----- PASSED: EXT-X-STREAM-INF tags followed by URI')
+				pList.mResultLine = 'PASSED: EXT-X-STREAM-INF tags followed by URI'
 			if resultBW:
 				pList.checkResults.append('<<----- PASSED: BANDWIDTH attribute present in tag')
+				pList.mResultBW = 'PASSED: BANDWIDTH attribute present in tag'
 			else:
 				pList.checkResults.append('<<----- FAILED: BANDWIDTH attribute missing in tag')
+				pList.mResultBW = 'FAILED: BANDWIDTH attribute missing in tag'
 		else:
 			resultTag = pList.vStreamInf(self)
 			if resultTag:
