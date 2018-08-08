@@ -505,6 +505,8 @@ class Playlist(object):
 		medSeg = False  #Set to True when a media-segment.ts is encountered
 		check = False   #Returned as True if EXT-X-DISCONTINUITY-SEQUENCE tag present and before first media segment
 		multTag = False #Returned as True if too many tags 
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].endswith('.ts'):
 				medSeg = True
@@ -512,10 +514,13 @@ class Playlist(object):
 				count = count + 1
 				if not medSeg:
 					check = True
+					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found before first media segment on line= ' + str())
+				else:
+					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str())
 		if count > 1:
 			multTag = True
 		logging.info("<<------------------------------++ Exiting vDiscontinuitySequence")
-		return count, check, multTag
+		return count, check, multTag, lineNums
 		
 	def vIFramesOnly(self, validator):
 	#This method checks to see if a variant playlist contains the EXT-X-I-FRAMES-ONLY tag, and if it 
@@ -572,6 +577,9 @@ class VariantPlaylist(Playlist):
 	# vTCount = Text result (exists if) EXT-X-MEDIA-SEQUENCE is NOT present for MediaSequenceCheck()
 	# vMedTagCheck = Text result of EXT-X-MEDIA-SEQUENCE appears before media segments in MediaSequenceCheck()
 	# vMultiSeqTag = Text result (exists if) Multiple EXT-X-MEDIA-SEQUENCE tags found in MediaSequenceCheck()
+	# vDSTCount = Text result (exists if) EXT-X-DISCONTINUITY-SEQUENCE is NOT present from DiscontinuitySequenceCheck()
+	# vDSTagCheck = Text result EXT-X-DISCONTINUITY-SEQUENCE appears before media segments from DiscontinuitySequenceCheck()
+	# vDSMultiCheck = Text result (exists if) Multiple EXT-X-DISCONTINUITY-SEQUENCE tags from DiscontinuitySequenceCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -584,6 +592,7 @@ class VariantPlaylist(Playlist):
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
 	vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
+	vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -1116,21 +1125,30 @@ class DiscontinuitySequenceCheck(Validator):
 		logging.info("++------------------------->> DiscontinuitySequenceCheck Validation")
 		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				varDisSeqCheck = DiscontinuitySequenceCheck()
 				pList.variantList[variant].accept(varDisSeqCheck)
 		else:
-			tCount, tagCheck, multiTag = pList.vDiscontinuitySequence(self)
+			tCount, tagCheck, multiTag, errorLines = pList.vDiscontinuitySequence(self)
+			if not tagCheck or multiTag:
+				for line in range(0, len(errorLines)):
+					pList.vDiscSequenceLines.append(errorLines[line])
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
 			if tCount == 0:
 				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE is NOT present')
+				pList.vDSTCount = 'PASSED: EXT-X-DISCONTINUITY-SEQUENCE is NOT present'
 			elif tagCheck:
 				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments')
+				pList.DSTagCheck = 'PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments'
 			elif not tagCheck:
 				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag')
+				pList.DSTagCheck = 'FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag'
 			elif multiTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed')
+				pList.vDSMultiCheck = 'FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
