@@ -422,19 +422,24 @@ class Playlist(object):
 		segments = False  #Result of segments test where True indicates a Failure
 		start = False     #Result of START test where True indicates a Failure
 		tOffset = False   #Result of Time offset attribute where True indicates a failure
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
 				segCount += 1
+				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line))
 			elif self.vContent[line].startswith('#EXT-X-START'):
 				startCount += 1
+				lineNums.append('EXT-X-START on line= ' + str(line))
 				if 'TIME-OFFSET' not in self.vContent[line]:
 					tOffset = True
+					lineNums.append('EXT-X-START tag missing on line= ' + str(line))
 		if segCount > 1:
 			segments = True
 		if startCount > 1:
 			start = True
 		logging.info("<<------------------------------++ Exiting vMediaMaster")
-		return segments, start, tOffset
+		return segments, start, tOffset, lineNums
 		
 	def vTargetDuration(self, validator):
 		#This method ensures that this tag only appears once in a playlist, and the EXTINF duration 
@@ -547,6 +552,9 @@ class VariantPlaylist(Playlist):
 	# compCheckV7 = Text results Version 7+ EXT-X-ALLOW-CACHE removed
 	# vTagsResult = Text result from MixTagsCheck()
 	# vResultTag = Text result from StreamInfCheck()
+	# vSegTag = Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
+	# vStartTag = Text result of START tags check in MediaMasterCheck()
+	# vTimeTag = Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -949,7 +957,7 @@ class MediaMasterCheck(Validator):
 		errorLines = []
 		errorLines.clear
 		if pList.master:
-			segTag, startTag, timeTag = pList.mMediaMaster(self)
+			segTag, startTag, timeTag, errorLines = pList.mMediaMaster(self)
 			pList.checkResults.append('<<----- Master Playlist: ' + pList.suppliedURL)
 			if segTag or startTag or timeTag:
 				for line in range(0, len(errorLines)):
@@ -976,23 +984,29 @@ class MediaMasterCheck(Validator):
 				medMasCheck = MediaMasterCheck()
 				pList.variantList[variant].accept(medMasCheck)
 		else:
-			segTag, startTag, timeTag = pList.vMediaMaster(self)
+			segTag, startTag, timeTag, errorLines = pList.vMediaMaster(self)
 			if segTag or startTag or timeTag:
 				for line in range(0, len(errorLines)):
 					pList.vMediaMasterLines.append(errorLines[line])
 			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found in variant')
+				pList.vSegTag = 'FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found in variant'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-INDEPENDENT-SEGMENTS check')
+				pList.vSegTag = 'PASSED: EXT-X-INDEPENDENT-SEGMENTS check'
 			if startTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-START tags found in variant')
+				pList.vStartTag = 'FAILED: Multiple EXT-X-START tags found in variant'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START check')
+				pList.vStartTag = 'PASSED: EXT-X-START check'
 			if timeTag:
 				pList.checkResults.append('<<-----FAILED: EXT-X-START:TIME-OFFSET attribute missing in variant')
+				pList.vTimeTag = 'FAILED: EXT-X-START:TIME-OFFSET attribute missing in variant'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START:TIME-OFFSET check')
+				pList.vTimeTag = 'PASSED: EXT-X-START:TIME-OFFSET check'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
 		pList.checkResults.append('')
