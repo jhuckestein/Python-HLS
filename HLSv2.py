@@ -528,13 +528,16 @@ class Playlist(object):
 		logging.info("++------------------------------>> Entering vIFramesOnly")
 		check = False  #Set to True when EXT-X-I-FRAMES-ONLY tag is found
 		medSeg = False #Set to True when EXT-X-MAP tag is found
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY'):
 				check = True
 			if self.vContent[line].startswith('#EXT-X-MAP'):
 				medSeg = True
+				lineNums.append('EXT-X-MAP missing on line= ' + str(line))
 		logging.info("<<------------------------------++ Exiting vIFramesOnly")
-		return check, medSeg
+		return check, medSeg, lineNums
 		
 	# BASIC DEFINITONS USED
 	#suppliedURL 		 # The string for URL supplied by the command line or batch file
@@ -580,6 +583,8 @@ class VariantPlaylist(Playlist):
 	# vDSTCount = Text result (exists if) EXT-X-DISCONTINUITY-SEQUENCE is NOT present from DiscontinuitySequenceCheck()
 	# vDSTagCheck = Text result EXT-X-DISCONTINUITY-SEQUENCE appears before media segments from DiscontinuitySequenceCheck()
 	# vDSMultiCheck = Text result (exists if) Multiple EXT-X-DISCONTINUITY-SEQUENCE tags from DiscontinuitySequenceCheck()
+	# vFrameCheck = Text result (exists if) EXT-X-I-FRAMES-ONLY tag NOT used from IFramesOnlyCheck()
+	# vMediaSeg = Text result for EXT-X-MAP tag in IFramesOnlyCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -593,6 +598,7 @@ class VariantPlaylist(Playlist):
 	vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
 	vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
+	vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -1161,20 +1167,28 @@ class IFramesOnlyCheck(Validator):
 		logging.info("++------------------------->> IFramesOnlyCheck Validation")
 		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				iFrameOnlyCk = IFramesOnlyCheck()
 				pList.variantList[variant].accept(iFrameOnlyCk)
 		else:
-			frameCheck, mediaSeg = pList.vIFramesOnly(self)
+			frameCheck, mediaSeg, errorLines = pList.vIFramesOnly(self)
+			if not mediaSeg:
+				for line in range(0, len(errorLines)):
+					pList.vIFramesOnlyLines.append(errorLines[line])
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
 			if not frameCheck:
 				pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY tag NOT used')
+				pList.vFrameCheck = 'PASSED: EXT-X-I-FRAMES-ONLY tag NOT used'
 			else:
 				if mediaSeg:
 					pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY used with media initializaion')
+					pList.vMediaSeg = 'PASSED: EXT-X-I-FRAMES-ONLY used with media initializaion'
 				else:
 					pList.checkResults.append('<<-----WARNING: EXT-X-I-FRAMES-ONLY tag should accompany EXT-X-MAP')
+					pList.vMediaSeg = 'WARNING: EXT-X-I-FRAMES-ONLY tag should accompany EXT-X-MAP'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
 		pList.checkResults.append('')
