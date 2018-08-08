@@ -480,6 +480,8 @@ class Playlist(object):
 		medSeg = False  #Set to True when a media-segment.ts is encountered
 		check = False   #Returned as True if EXT-X-MEDIA-SEQUENCE tag present and before first media segment
 		multTag = False #Returned as True if too many tags 
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].endswith('.ts'):
 				medSeg = True
@@ -487,10 +489,13 @@ class Playlist(object):
 				count = count + 1
 				if not medSeg:
 					check = True
+					lineNums.append('EXT-X-MEDIA-SEQUENCE found before Media Segment line= ' + str(line))
+				else:
+					lineNums.append('EXT-X-MEDIA-SEQUENCE found on line= ' + str(line))
 		if count > 1:
 			multTag = True
 		logging.info("<<------------------------------++ Exiting vMediaSequence")
-		return count, check, multTag
+		return count, check, multTag, lineNums
 		
 	def vDiscontinuitySequence(self, validator):
 	#This method ensures that the optional EXT-X-DISCONTINUITY-SEQUENCE tag appears only once in a playlist
@@ -564,6 +569,9 @@ class VariantPlaylist(Playlist):
 	# vTagCheck = Text result for EXT-X-TARGETDURATION Tag in TargetDurationCheck()
 	# vMultiTag = Text result for Multiple EXT-X-TARGETDURATION Tags in TargetDurationCheck()
 	# vDurCheck = Text result for EXTINF duration values in TargetDurationCheck()
+	# vTCount = Text result (exists if) EXT-X-MEDIA-SEQUENCE is NOT present for MediaSequenceCheck()
+	# vMedTagCheck = Text result of EXT-X-MEDIA-SEQUENCE appears before media segments in MediaSequenceCheck()
+	# vMultiSeqTag = Text result (exists if) Multiple EXT-X-MEDIA-SEQUENCE tags found in MediaSequenceCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -575,6 +583,7 @@ class VariantPlaylist(Playlist):
 	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
 	vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
+	vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -1071,21 +1080,30 @@ class MediaSequenceCheck(Validator):
 		logging.info("++------------------------->> MediaSequenceCheck Validation")
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				varMedSeqCheck = MediaSequenceCheck()
 				pList.variantList[variant].accept(varMedSeqCheck)
 		else:
-			tCount, tagCheck, multiTag = pList.vMediaSequence(self)
+			tCount, tagCheck, multiTag, errorLines = pList.vMediaSequence(self)
+			if not tagCheck or multiTag:
+				for line in range(0, len(errorLines)):
+					pList.vMediaSequenceLines.append(errorLines[line])
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
 			if tCount == 0:
 				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE is NOT present')
+				pList.vTCount = 'PASSED: EXT-X-MEDIA-SEQUENCE is NOT present'
 			elif tagCheck:
 				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments')
+				pList.vMedTagCheck = 'PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments'
 			elif not tagCheck:
 				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag')
+				pList.vMedTagCheck = 'FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag'
 			elif multiTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed')
+				pList.vMultiSeqTag = 'FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
