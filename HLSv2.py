@@ -393,19 +393,24 @@ class Playlist(object):
 		segments = False  #Result of segments test where True indicates a Failure
 		start = False     #Result of START test where True indicates a Failure
 		tOffset = False   #Result of Time offset attribute where True indicates a failure
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
 				segCount += 1
+				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line))
 			elif self.mContent[line].startswith('#EXT-X-START'):
 				startCount += 1
+				lineNums.append('EXT-X-START on line= ' + str(line))
 				if 'TIME-OFFSET' not in self.mContent[line]:
 					tOffset = True
+					lineNums.append('EXT-X-START tag missing on line= ' + str(line))
 		if segCount > 1:
 			segments = True
 		if startCount > 1:
 			start = True
 		logging.info("<<------------------------------++ Exiting mMediaMaster")
-		return segments, start, tOffset
+		return segments, start, tOffset, lineNums
 		
 	def vMediaMaster(self, validator):
 		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
@@ -551,6 +556,7 @@ class VariantPlaylist(Playlist):
 	verCompCkErrorLines = [] #Tracks which lines were errors for VerCompatCheck()
 	vTagsErrorLines = []   #Tracks which lines were errors for MixTagsCheck()
 	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
+	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -575,6 +581,9 @@ class MasterPlaylist(Playlist):
 	# mJSONCk = Text result of URI attribute JSON formatted from SessionDataCheck()
 	# mURICk = Text result of both VALUE and URI attribute from SessionDataCheck()
 	# mURI = Text result of URI attribute from SessionDataCheck()
+	# mSegTag = Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
+	# mStartTag = Text result of START tags check in MediaMasterCheck()
+	# mTimeTag = Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
 	#
 	
 	# OTHER ATTRIBUTES:
@@ -587,6 +596,7 @@ class MasterPlaylist(Playlist):
 	mStreamInfLines = []  #List of error lines from StreamInfCheck()
 	mIFrameLines = []  #List of error lines from IFrameCheck()
 	mSessionDataLines = [] #List of error lines from SessionDataCheck()
+	mMediaMasterLines = [] #List of error lines from MediaMasterCheck()
 	
 
 
@@ -936,26 +946,40 @@ class MediaMasterCheck(Validator):
 		logging.info("++------------------------->> Media & Master Tag Validation")
 		pList.checkResults.append('<<-----Media/Master (Joint) Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
 			segTag, startTag, timeTag = pList.mMediaMaster(self)
 			pList.checkResults.append('<<----- Master Playlist: ' + pList.suppliedURL)
+			if segTag or startTag or timeTag:
+				for line in range(0, len(errorLines)):
+					pList.mMediaMasterLines.append(errorLines[line])
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found')
+				pList.mSegTag = 'FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-INDEPENDENT-SEGMENTS check')
+				pList.mSegTag = 'PASSED: EXT-X-INDEPENDENT-SEGMENTS check'
 			if startTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-START tags found')
+				pList.mStartTag = 'FAILED: Multiple EXT-X-START tags found'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START check')
+				pList.mStartTag = 'PASSED: EXT-X-START check'
 			if timeTag:
 				pList.checkResults.append('<<-----FAILED: EXT-X-START:TIME-OFFSET attribute missing')
+				pList.mTimeTag = 'FAILED: EXT-X-START:TIME-OFFSET attribute missing'
 			else:
 				pList.checkResults.append('<<-----PASSED: EXT-X-START:TIME-OFFSET check')
+				pList.mTimeTag = 'PASSED: EXT-X-START:TIME-OFFSET check'
 			for variant in range(0, len(pList.variantList)):
 				medMasCheck = MediaMasterCheck()
 				pList.variantList[variant].accept(medMasCheck)
 		else:
 			segTag, startTag, timeTag = pList.vMediaMaster(self)
+			if segTag or startTag or timeTag:
+				for line in range(0, len(errorLines)):
+					pList.vMediaMasterLines.append(errorLines[line])
 			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
 			if segTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-INDEPENDENT-SEGMENTS tags found in variant')
