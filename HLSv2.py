@@ -452,19 +452,25 @@ class Playlist(object):
 		check = False   #Returned as True if TARGETDURATION tag present
 		multTag = False #Returned as True if too many tags 
 		durationCheck = False  #Returned as True if duration > maxDuration
+		lineNums = []      #Returned list for errors and line numbers
+		lineNums.clear
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-TARGETDURATION'):
 				check = True
 				count = count + 1
+				if count == 1:
+					lineNums.append('First EXT-X-TARGETDURATION tag found on line= ' + str(line))
 				maxDuration = float(self.vContent[line].strip('#EXT-X-TARGETDURATION:'))
 				if count > 1:
 					multTag = True
+					lineNums.append('Extra EXT-X-TARGETDURATION tag found on line= ' + str(line))
 			if self.vContent[line].startswith('#EXTINF:'):
 				duration = float(self.vContent[line].strip('#EXTINF:,'))
 				if duration > maxDuration:
 					durationCheck = True
+					lineNums.append('EXTINF value exceeds Max on line= ' + str(line))
 		logging.info("<<------------------------------++ Exiting vTargetDuration")
-		return check, multTag, durationCheck
+		return check, multTag, durationCheck, lineNums
 	
 	def vMediaSequence(self, validator):
 		#This method ensures that the optional EXT-X-MEDIA-SEQUENCE tag appears only once in a playlist
@@ -555,6 +561,9 @@ class VariantPlaylist(Playlist):
 	# vSegTag = Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
 	# vStartTag = Text result of START tags check in MediaMasterCheck()
 	# vTimeTag = Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
+	# vTagCheck = Text result for EXT-X-TARGETDURATION Tag in TargetDurationCheck()
+	# vMultiTag = Text result for Multiple EXT-X-TARGETDURATION Tags in TargetDurationCheck()
+	# vDurCheck = Text result for EXTINF duration values in TargetDurationCheck()
 	# 
 	
 	# OTHER ATTRIBUTES:
@@ -565,6 +574,7 @@ class VariantPlaylist(Playlist):
 	vTagsErrorLines = []   #Tracks which lines were errors for MixTagsCheck()
 	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
+	vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -1020,23 +1030,35 @@ class TargetDurationCheck(Validator):
 		logging.info("++------------------------->> TargetDurationCheck Validation")
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
+		errorLines = []
+		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				varTargDurCheck = TargetDurationCheck()
 				pList.variantList[variant].accept(varTargDurCheck)
 		else:
-			tagCheck, multiTag, durCheck = pList.vTargetDuration(self)
+			tagCheck, multiTag, durCheck, errorLines = pList.vTargetDuration(self)
+			if not tagCheck or multiTag or durCheck:
+				for line in range(0, len(errorLines)):
+					pList.vTargetDurationLines.append(errorLines[line])
 			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
 			if tagCheck:
 				pList.checkResults.append('<<-----PASSED: TARGETDURATION Tag is present')
+				pList.vTagCheck = 'PASSED: TARGETDURATION Tag is present'
 			else:
 				pList.checkResults.append('<<-----FAILED: EXT-X-TARGETDURATION Tag is REQUIRED')
+				pList.vTagCheck = 'FAILED: EXT-X-TARGETDURATION Tag is REQUIRED'
 			if multiTag:
 				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-TARGETDURATION Tags Found')
+				pList.vMultiTag = 'FAILED: Multiple EXT-X-TARGETDURATION Tags Found'
+			else:
+				pList.vMultiTag = 'PASSED: No Multiple EXT-X-TARGETDURATION Tags'
 			if durCheck:
 				pList.checkResults.append('<<-----FAILED: EXTINF duration values greater then Maximum')
+				pList.vDurCheck = 'FAILED: EXTINF duration values greater then Maximum'
 			else:
 				pList.checkResults.append('<<-----PASSED: DURATION for EXTINF tags less than MAX')
+				pList.vDurCheck = 'PASSED: DURATION for EXTINF tags less than MAX'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
