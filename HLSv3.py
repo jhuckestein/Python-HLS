@@ -1532,6 +1532,7 @@ def main(argv):
 			iFrameOnlyCheck = IFramesOnlyCheck()
 			playlist.accept(iFrameOnlyCheck)
 			
+			######### This block gets upgraded for HLSv3.py
 			#Create a Header in the output file
 			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
 			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
@@ -1554,14 +1555,20 @@ def main(argv):
 			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
 			outFileHandle.close()
 			batchFile.close()
+			
+			########### End of upgrade block for HLSv3.py
 		#Case where the user supplied a text file of playlist files
 		else:
+			###### Block to upgrade for HLSv3.py to a word doc output
+			
 			#Create a Header in the output file
 			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
 			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
 			s2 = str(secondLine)
 			outFileHandle.write(s2)
 			outFileHandle.write('\n')
+			
+			###### End of Block to upgrade
 			
 			#Now process each line in the batch file containing playlist file URLs
 			for line in batchFile:
@@ -1617,6 +1624,8 @@ def main(argv):
 				iFrameOnlyCheck = IFramesOnlyCheck()
 				playlist.accept(iFrameOnlyCheck)
 				
+				###### Second batch file block to upgrade HLSv3.py
+				
 				#Now print the results to the output file
 				for line in range(0, len(playlist.checkResults)):
 					outFileHandle.write(playlist.checkResults[line])
@@ -1634,6 +1643,7 @@ def main(argv):
 			#Close the output file and batchFile
 			outFileHandle.close()
 			batchFile.close()
+			    ###### End of second batch file block to upgrade HLSv3.py
 	
 	## Command line execution block
 	elif (sys.argv[1] == "command"):
@@ -1700,7 +1710,7 @@ def main(argv):
 			iFrameOnlyCheck = IFramesOnlyCheck()
 			playlist.accept(iFrameOnlyCheck)
 
-			
+			###### Block to edit for command line pretty-print
 			## Here we need to print out the contents of the checks:
 			#print('<<--------------->>')
 			print('The playlist was a Master =', playlist.master)
@@ -1711,6 +1721,8 @@ def main(argv):
 			print('<<##--------------- End of Report ---------------##>>')
 			print('')
 			print('')
+			
+			###### End of block to edit for command line pretty-print
 			
 			## Now we are at the end of the loop.  Ask for another input
 			## to continue the process, or the user can end.
