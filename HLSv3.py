@@ -51,8 +51,14 @@
 ##Begin package import section
 import sys
 import json
+import getopt
+import re
 import logging
 import requests
+import docx
+from docx import Document
+import sys
+import os
 
 ##End package import section
 
