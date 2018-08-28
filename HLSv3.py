@@ -722,7 +722,7 @@ class VersionCheck(Validator):
 				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
-				pList.mVersionCk = 'EXT-X-VERSION test: Failed / multiple tags'
+				pList.mVersionCk = 'FAILED: EXT-X-VERSION test / multiple tags'
 				logging.info("++---------->> HeaderCheck Master Validation FAILED")
 			else:
 				pList.checkResults.append('Master Playlist =' + pList.suppliedURL)
@@ -743,12 +743,12 @@ class VersionCheck(Validator):
 				logging.info("++---------->> EXT-X-VERSION tag found on lines: %s", pList.verCkErrorLines)
 				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Failed / multiple tags')
-				pList.vVersionCk = 'EXT-X-VERSION test: Failed / multiple tags'
+				pList.vVersionCk = 'FAILED: EXT-X-VERSION test / multiple tags'
 				logging.info("++---------->> HeaderCheck Variant Validation FAILED")
 			else:
 				pList.checkResults.append('Variant Playlist =' + pList.suppliedURL)
 				pList.checkResults.append('EXT-X-VERSION test: Passed')
-				pList.vVersionCk = 'EXT-X-VERSION test: Passed'
+				pList.vVersionCk = 'PASSED: EXT-X-VERSION test'
 				pList.checkResults.append('VERSION = ' + str(ver))
 				logging.info("++---------->> HeaderCheck Variant Validation PASSED: " + str(pList.playVersion))
 		pList.checkResults.append('')
@@ -1469,6 +1469,7 @@ def screenPrint (playList):
 			print(playList.variantURLs[i])
 		print('')
 	print('')
+	print('-----<<HEADER CHECK>>-----')
 	print('For the given URL: ', playList.suppliedURL, ' \t', playList.ckHeader)
 	if playList.master:
 		print('Variant List:')
@@ -1476,6 +1477,17 @@ def screenPrint (playList):
 			print(playList.variantURLs[i], ' \t\t\t', playList.variantList[i].ckHeader)
 		print('')
 	print('')
+	print('-----<<VERSION CHECK>>-----')
+	if playList.master:
+		print('For the given URL: ', playList.suppliedURL, '\t', playList.mVersionCk)
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], ' \t\t\t', playList.variantList[i].vVersionCk)
+		print('')
+	else:
+		print('For the given URL: ', playList.suppliedURL, '\t', playList.vVersionCk)
+	print('')
+	
 	
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
