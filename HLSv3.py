@@ -1491,7 +1491,8 @@ def screenPrint (playList):
 				print(playList.variantURLs[i], ' multiple tags on lines: ', playList.variantList[i].verCkErrorLines)
 	else:
 		print('For the given URL: ', playList.suppliedURL, '\t', playList.vVersionCk)
-	
+		if len(playList.verCkErrorLines) > 0:
+			print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
 	print('')
 	print('-----<<COMPATIBILITY CHECK>>-----')
 	
