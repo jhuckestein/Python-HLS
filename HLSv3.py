@@ -1495,6 +1495,34 @@ def screenPrint (playList):
 			print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
 	print('')
 	print('-----<<COMPATIBILITY CHECK>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	if playList.master:
+		print(playList.compService)
+		print(playList.compProgram)
+		print(playList.compCache)
+		print('----------')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], '\t', playList.variantList[i].compCheckV2)
+			print('\t\t\t', playList.variantList[i].compCheckV3)
+			print('\t\t\t', playList.variantList[i].compCheckV4)
+			print('\t\t\t', playList.variantList[i].compCheckV5)
+			print('\t\t\t', playList.variantList[i].compCheckV6)
+			print('\t\t\t', playList.variantList[i].compCheckV7)
+		if len(playList.verCompCkErrorLines) > 0:
+			print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].verCompCkErrorLines) > 0:
+				print(playList.variantURLs[i], ' compatibility errors on lines: ', \
+					playList.variantList[i].verCompCkErrorLines)
+	else:
+		print(playList.compCheckV2)
+		print(playList.compCheckV3)
+		print(playList.compCheckV4)
+		print(playList.compCheckV5)
+		print(playList.compCheckV6)
+		print(playList.compCheckV7)
+		if len(playList.verCompCkErrorLines) > 0:
+			print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
 	
 	
 	print('<<##--------------- End of Report ---------------##>>')
