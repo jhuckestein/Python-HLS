@@ -1463,6 +1463,19 @@ def screenPrint (playList):
 	print('<<##--------------------- Report ------------------------##>>')
 	print('The playlist was a Master =', playList.master)
 	print('The given URL was =', playList.suppliedURL)
+	if playList.master:
+		print('Variants listed in Master Playlist:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+		print('')
+	print('')
+	print('For the given URL: ', playList.suppliedURL, ' \t', playList.ckHeader)
+	if playList.master:
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], ' \t\t\t', playList.variantList[i].ckHeader)
+		print('')
+	print('')
 	
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
@@ -1673,7 +1686,7 @@ def main(argv):
 			#webCheck(boolean) tells wheter the URL begins with http/https
 			# 1) open the URL
 			resource, urlCheck, webCheck = openURL(url)
-			print('<<##--------------------- Report ------------------------##>>')
+			#print('<<##--------------------- Report ------------------------##>>')
 			print("The valid check for URL was: ", urlCheck)
 			
 			# 2) Create objects from the "resource"
@@ -1724,18 +1737,6 @@ def main(argv):
 			
 			iFrameOnlyCheck = IFramesOnlyCheck()
 			playlist.accept(iFrameOnlyCheck)
-
-			###### Block to edit for command line pretty-print
-			## Here we need to print out the contents of the checks:
-			#print('<<--------------->>')
-			print('The playlist was a Master =', playlist.master)
-			print('The given URL was =', playlist.suppliedURL)
-			for line in range(0, len(playlist.checkResults)):
-				print(playlist.checkResults[line])
-			
-			print('<<##--------------- End of Report ---------------##>>')
-			print('')
-			print('')
 			
 			screenPrint(playlist)
 			
