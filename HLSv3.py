@@ -1456,6 +1456,21 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 # End of createPlaylist
 ####################################
 
+####################################
+# 
+# This function is used to print out the report to the screen
+def screenPrint (playList):
+	print('<<##--------------------- Report ------------------------##>>')
+	print('The playlist was a Master =', playList.master)
+	print('The given URL was =', playList.suppliedURL)
+	
+	print('<<##--------------- End of Report ---------------##>>')
+	print('')
+	print('')
+	return
+#
+# End of screenPrint
+####################################
 
 ####################################
 #
@@ -1721,6 +1736,8 @@ def main(argv):
 			print('<<##--------------- End of Report ---------------##>>')
 			print('')
 			print('')
+			
+			screenPrint(playlist)
 			
 			###### End of block to edit for command line pretty-print
 			
