@@ -868,6 +868,9 @@ class MixTagsCheck(Validator):
 			else:
 				pList.checkResults.append('<<----- PASSED: Master Playlist only contains Master tags ')
 				pList.mTagsResult = 'PASSED: Master Playlist only contains Master tags'
+			for variant in range(0, len(pList.variantList)):
+				mixCheck = MixTagsCheck()
+				pList.variantList[variant].accept(mixCheck)
 		else:
 			test, errorLines = pList.vMixCheck(self)
 			if test:
@@ -1523,8 +1526,28 @@ def screenPrint (playList):
 		print(playList.compCheckV7)
 		if len(playList.verCompCkErrorLines) > 0:
 			print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
-	
-	
+	print('')
+	print('-----<<MIXED TAGS CHECK>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	if playList.master:
+		print('playList.mTagsResult')
+		print('----------')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], '\t', playList.variantList[i].vTagsResult)
+		print('')
+		if len(playList.mTagsErrorLines) > 0:
+			print('----------')
+			print(playList.suppliedURL, ' mixed tags errors on lines: ', playList.mTagsErrorLines)
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vTagsErrorLines) > 0:
+				print(playList.variantURLs[i], ' mixed tags errors on lines: ', \
+					playList.variantList[i].vTagsErrorLines)
+	else:
+		print(playList.vTagsResult)
+		if len(playList.vTagsErrorLines) > 0:
+			print(playList.suppliedURL, ' mixed tags errors on lines: ', playList.vTagsErrorLines)
+					
+					
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
 	print('')
