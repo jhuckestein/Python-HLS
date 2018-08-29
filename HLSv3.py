@@ -1502,10 +1502,11 @@ def screenPrint (playList):
 	print('')
 	print('-----<<COMPATIBILITY CHECK>>-----')
 	print('For the given URL: ', playList.suppliedURL)
+	print('')
 	if playList.master:
-		print(playList.compService)
-		print(playList.compProgram)
-		print(playList.compCache)
+		print('\t\t\t', playList.compService)
+		print('\t\t\t', playList.compProgram)
+		print('\t\t\t', playList.compCache)
 		print('----------')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].compCheckV2)
@@ -1518,22 +1519,26 @@ def screenPrint (playList):
 			print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
 		for i in range(0, len(playList.variantList)):
 			if len(playList.variantList[i].verCompCkErrorLines) > 0:
-				print(playList.variantURLs[i], ' compatibility errors on lines: ', \
-					playList.variantList[i].verCompCkErrorLines)
+				print(playList.variantURLs[i], ' compatibility errors on lines: ')
+				for k in range(0, len(playList.variantList[i].verCompCkErrorLines)):
+					print('\t', playList.variantList[i].verCompCkErrorLines[k])
 	else:
-		print(playList.compCheckV2)
-		print(playList.compCheckV3)
-		print(playList.compCheckV4)
-		print(playList.compCheckV5)
-		print(playList.compCheckV6)
-		print(playList.compCheckV7)
+		print('\t\t\t', playList.compCheckV2)
+		print('\t\t\t', playList.compCheckV3)
+		print('\t\t\t', playList.compCheckV4)
+		print('\t\t\t', playList.compCheckV5)
+		print('\t\t\t', playList.compCheckV6)
+		print('\t\t\t', playList.compCheckV7)
 		if len(playList.verCompCkErrorLines) > 0:
-			print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
+			print(playLIst.suppliedURL, ' compatibility errors on lines: ')
+			for i in range(0, len(playList.verCompCkErrorLines)):
+				print('\t', playList.verCompCkErrorLines[i])
 	print('')
 	print('-----<<MIXED TAGS CHECK>>-----')
 	print('For the given URL: ', playList.suppliedURL)
+	print('')
 	if playList.master:
-		print('playList.mTagsResult')
+		print(playList.mTagsResult)
 		print('----------')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].vTagsResult)
@@ -1542,24 +1547,27 @@ def screenPrint (playList):
 			print('----------')
 			print(playList.suppliedURL, ' mixed tags errors on lines: ')
 			for i in range(0, len(playList.mTagsErrorLines)):
-				print(playList.mTagsErrorLines[i])
+				print('\t', playList.mTagsErrorLines[i])
 		for i in range(0, len(playList.variantList)):
 			if len(playList.variantList[i].vTagsErrorLines) > 0:
 				print(playList.variantURLs[i], ' mixed tags errors on lines: ')
 				for k in range(0, len(playList.variantList[i].vTagsErrorLines)):
-					print(playList.variantList[i].vTagsErrorLines[k])
+					print('\t', playList.variantList[i].vTagsErrorLines[k])
 	else:
-		print(playList.vTagsResult)
+		print('\t\t\t', playList.vTagsResult)
 		if len(playList.vTagsErrorLines) > 0:
+			print('')
 			print(playList.suppliedURL, ' mixed tags errors on lines: ')
+			print('----------')
 			for i in range(0, len(playList.vTagsErrorLines)):
-				print(playList.vTagsErrorLines[i])
+				print('\t', playList.vTagsErrorLines[i])
 	print('')
 	print('-----<<STREAM INF CHECK>>-----')
 	print('For the given URL: ', playList.suppliedURL)
+	print('')
 	if playList.master:
-		print(playList.mResultLine)
-		print(playList.mResultBW)
+		print('\t\t\t', playList.mResultLine)
+		print('\t\t\t', playList.mResultBW)
 		print('----------')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].vResultTag)
@@ -1568,20 +1576,34 @@ def screenPrint (playList):
 			print('----------')
 			print(playList.suppliedURL, ' stream INF errors on lines: ')
 			for i in range(0, len(playList.mStreamInfLines)):
-				print(playList.mStreamInfLines[i])
+				print('\t', playList.mStreamInfLines[i])
 		for i in range(0, len(playList.variantList)):
 			if len(playList.variantList[i].vStreamInfLines) > 0:
 				print(playList.variantURLs[i], ' stream INF errors on lines: ')
 				for k in range(0, len(playList.variantList[i].vStreamInfLines)):
-					print(playList.variantList[i].vStreamInfLines[k])
+					print('\t', playList.variantList[i].vStreamInfLines[k])
 				print('')
 	else:
-		print(playList.vResultTag)
+		print('\t\t\t', playList.vResultTag)
+		print('')
 		if len(playList.vStreamInfLines) > 0:
 			print(playList.suppliedURL, ' stream INF errors on lines: ')
+			print('----------')
 			for i in range(0, len(playList.vStreamInfLines)):
-				print(playList.vStreamInfLines[i])
+				print('\t', playList.vStreamInfLines[i])
 	print('')
+	if playList.master:
+		print('-----<<IFRAME CHECK>>-----')
+		print('For the given URL: ', playList.suppliedURL)
+		print('')
+		print('\t\t\t', playList.mBWidth)
+		print('\t\t\t', playList.mURI)
+		if len(playList.mIFrameLines) > 0:
+			print('----------')
+			print('EXT-X-I-FRAME-STREAM-INF errors on lines: ')
+			for i in range(0, len(playList.mIFrameLines)):
+				print('\t', playList.mIFrameLines[i])
+		print('')
 					
 					
 	print('<<##--------------- End of Report ---------------##>>')
