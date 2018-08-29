@@ -146,19 +146,19 @@ class Playlist(object):
 				if 'INSTREAM-ID' and 'SERVICE' in self.mContent[line]:
 					if self.playVersion < 7:
 						compService = False
-						lineNums.append('INSTREAM-ID and SERVICE require version 7+ on line= ' + str(line))
+						lineNums.append('INSTREAM-ID and SERVICE require version 7+ on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-STREAM-INF'):
 				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
-					lineNums.append('EXT-X-STREAM-INF used with PROGRAM-ID requires version 6+ line= ' + str(line))
+					lineNums.append('EXT-X-STREAM-INF used with PROGRAM-ID requires version 6+ line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF'):
 				if self.playVersion < 6 and 'PROGRAM-ID' in self.mContent[line]:
 					compProgram = False
-					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag used with PROGRAM-ID requires version 6+ line= ' + str(line))
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag used with PROGRAM-ID requires version 6+ line= ' + str(line+1))
 			elif self.playVersion >= 7:
 				if 'EXT-X-ALLOW-CACHE' in self.mContent[line]:
 					compCache = False
-					lineNums.append('EXT-X-ALLOW-CACHE tag NOT allowed in version 7+ line= ' + str(line))
+					lineNums.append('EXT-X-ALLOW-CACHE tag NOT allowed in version 7+ line= ' + str(line+1))
 		logging.info("++------------------------------>> Leaving mCompVersion")
 		return compService, compProgram, compCache, lineNums
 	
@@ -188,31 +188,31 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-KEY:IV'):
 				check2 = False
-				lineNums.append('EXT-X-KEY:IV tag on line: ' + str(line))
+				lineNums.append('EXT-X-KEY:IV tag on line: ' + str(line+1))
 			elif self.vContent[line].startswith('#EXTINF:'):
 				tag = self.vContent[line].strip('#EXTINF:')
 				if self.playVersion < 3 and '.' in tag:   #Decimals not allowed below version-3
 					if tag.find('.') < 3:    #EXTINF:<duration>,<title> and title could have period
 						check3 = False
-						lineNums.append('EXTINF tag with decimals & Version less than 3.0  on line= ' + str(line))
+						lineNums.append('EXTINF tag with decimals & Version less than 3.0  on line= ' + str(line+1))
 			elif self.vContent[line].startswith('#EXT-X-BYTERANGE:') and self.playVersion < 4:
 				check4 = False
-				lineNums.append('EXT-X-BYTERANGE tag & Version < 4 on line= ' + str(line))
+				lineNums.append('EXT-X-BYTERANGE tag & Version < 4 on line= ' + str(line+1))
 			elif self.vContent[line].startswith('#EXT-X-I-FRAMES-ONLY') and self.playVersion < 4:
 				check4 = False
-				lineNums.append('EXT-X-I-FRAMES-ONLY tag & Version < 4 on line= ' + str(line))
+				lineNums.append('EXT-X-I-FRAMES-ONLY tag & Version < 4 on line= ' + str(line+1))
 			elif self.vContent[line].startswith('#EXT-X-MAP'):
 				if iFrames:
 					if self.playVersion < 5:
 						check5 = False
-						lineNums.append('EXT-X-MAP tag & I-Frames with Version < 5 on line= ' + str(line))
+						lineNums.append('EXT-X-MAP tag & I-Frames with Version < 5 on line= ' + str(line+1))
 				else:
 					if self.playVersion < 6:
 						check6 = False
-						lineNums.append('EXT-X-MAP tag without I-Frames & Version < 6 on line= ' + str(line))
+						lineNums.append('EXT-X-MAP tag without I-Frames & Version < 6 on line= ' + str(line+1))
 			elif self.vContent[line].startswith('#EXT-X-ALLOW-CACHE') and self.playVersion >= 7:
 				check7 = False
-				lineNums.append('EXT-X-ALLOW-CACHE tag & Version 7+ on line= ' + str(line))
+				lineNums.append('EXT-X-ALLOW-CACHE tag & Version 7+ on line= ' + str(line+1))
 			logging.info("++------------------------------>> Leaving vCompVersion")
 			return check2, check3, check4, check5, check6, check7, lineNums
 			
@@ -225,25 +225,25 @@ class Playlist(object):
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXTINF:') or self.mContent[line].startswith('#EXT-X-BYTERANGE:'):
 				mixedTags = True
-				lineNums.append('#EXTINF/#EXT-X-BYTERANGE found on line= ' + str(line))
+				lineNums.append('#EXTINF/#EXT-X-BYTERANGE found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY:') or self.mContent[line].startswith('#EXT-X-KEY:'):
 				mixedTags = True
-				lineNums.append('#EXT-X-DISCONTINUITY/#EXT-X-KEY found on line= ' + str(line))
+				lineNums.append('#EXT-X-DISCONTINUITY/#EXT-X-KEY found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('EXT-X-MAP:') or self.mContent[line].startswith('#EXT-X-PROGRAM-DATE-TIME:'):
 				mixedTags = True
-				lineNums.append('EXT-X-MAP/EXT-X-PROGRAM-DATE-TIME found on line= ' + str(line))
+				lineNums.append('EXT-X-MAP/EXT-X-PROGRAM-DATE-TIME found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-DATERANGE:') or self.mContent[line].startswith('#EXT-X-TARGETDURATION:'):
 				mixedTags = True
-				lineNums.append('EXT-X-DATERANGE/EXT-X-TARGETDURATION found on line= ' + str(line))
+				lineNums.append('EXT-X-DATERANGE/EXT-X-TARGETDURATION found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-MEDIA-SEQUENCE:') or self.mContent[line].startswith('#EXT-X-ENDLIST:'):
 				mixedTags = True
-				lineNums.append('EXT-X-MEDIA-SEQUENCE/EXT-X-ENDLIST found on line= ' + str(line))
+				lineNums.append('EXT-X-MEDIA-SEQUENCE/EXT-X-ENDLIST found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-PLAYLIST-TYPE:') or self.mContent[line].startswith('#EXT-X-I-FRAMES-ONLY:'):
 				mixedTags = True
-				lineNums.append('EXT-X-PLAYLIST-TYPE/EXT-X-I-FRAMES-ONLY found on line= ' + str(line))
+				lineNums.append('EXT-X-PLAYLIST-TYPE/EXT-X-I-FRAMES-ONLY found on line= ' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-DISCONTINUITY-SEQUENCE:'):
 				mixedTags = True
-				lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str(line))
+				lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str(line+1))
 		return mixedTags, lineNums
 		logging.info("++------------------------------>> Exiting  mMixCheck")
 			
@@ -256,13 +256,13 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-MEDIA:') or self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
 				mixedTags = True
-				lineNums.append('EXT-X-MEDIA/EXT-X-STREAM-INF found on line= ' + str(line))
+				lineNums.append('EXT-X-MEDIA/EXT-X-STREAM-INF found on line= ' + str(line+1))
 			if self.vContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:') or self.vContent[line].startswith('#EXT-X-SESSION-DATA:'):
 				mixedTags = True
-				lineNums.append('EXT-X-I-FRAME-STREAM-INF/EXT-X-SESSION-DATA found on line= ' + str(line))
+				lineNums.append('EXT-X-I-FRAME-STREAM-INF/EXT-X-SESSION-DATA found on line= ' + str(line+1))
 			if self.vContent[line].startswith('#EXT-X-SESSION-KEY:'):
 				mixedTags = True
-				lineNums.append('EXT-X-SESSION-KEY found on line= ' + str(line))
+				lineNums.append('EXT-X-SESSION-KEY found on line= ' + str(line+1))
 		return mixedTags, lineNums
 		logging.info("++------------------------------>> Exiting  vMixCheck")
 		
@@ -278,10 +278,10 @@ class Playlist(object):
 			if self.mContent[line].startswith('#EXT-X-STREAM-INF:'):
 				if self.mContent[line].count('BANDWIDTH') < 1:
 					bwAttr = False
-					lineNums.append('EXT-X-STREAM-INF tag does NOT have BANDWIDTH attribute line= ' + str(line))
+					lineNums.append('EXT-X-STREAM-INF tag does NOT have BANDWIDTH attribute line= ' + str(line+1))
 				if  not self.mContent[line + 1].endswith('.m3u8'):
 					nextLine = True
-					lineNums.append('EXT-X-STREAM-INF tag NOT followed by URI on line= ' + str(line))
+					lineNums.append('EXT-X-STREAM-INF tag NOT followed by URI on line= ' + str(line+1))
 		logging.info("++----------------------------->> Exiting mStreamInf")
 		return nextLine, bwAttr, lineNums
 		
@@ -295,7 +295,7 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-STREAM-INF:'):
 				checkV = True
-				lineNums.append('EXT-X-STREAM-INF found on line= ' + str(line))
+				lineNums.append('EXT-X-STREAM-INF found on line= ' + str(line+1))
 		logging.info("++----------------------------->> Exiting vStreamInf")
 		return checkV, lineNums
 	
@@ -311,10 +311,10 @@ class Playlist(object):
 			if self.mContent[line].startswith('#EXT-X-I-FRAME-STREAM-INF:'):
 				if self.mContent[line].count('BANDWIDTH') < 1:
 					bwAttr = False
-					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing BANDWIDTH on line= ' + str(line))
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing BANDWIDTH on line= ' + str(line+1))
 				if self.mContent[line].count('URI') < 1:
 					uriAttr = False
-					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing URI on line= ' + str(line))
+					lineNums.append('EXT-X-I-FRAME-STREAM-INF tag missing URI on line= ' + str(line+1))
 		logging.info("<<-----------------------------++ Exiting mIFrame")
 		return bwAttr, uriAttr, lineNums
 		
@@ -347,20 +347,20 @@ class Playlist(object):
 				#If you have the tag DATA-ID must be present
 				if not 'DATA-ID' in self.mContent[line]:
 					dCheck = True
-					lineNums.append('EXT-X-SESSION-DATA Must have DATA-ID attribute on line= ' + str(line))
+					lineNums.append('EXT-X-SESSION-DATA Must have DATA-ID attribute on line= ' + str(line + 1))
 				#If you have a VALUE it must be json formatted
 				if 'VALUE' in self.mContent[line]:
 					if 'URI' in self.mContent[line]:
 						uri = True
-						lineNums.append('VALUE may not be used with URI line= ' + str(line))
+						lineNums.append('VALUE may not be used with URI line= ' + str(line + 1))
 				if 'URI' in self.mContent[line]:
 					if not '.json' in self.mContent[line]:
 						json = True
-						lineNums.append('URI MUST be JSON formatted line= ' + str(line))
+						lineNums.append('URI MUST be JSON formatted line= ' + str(line + 1))
 				#VALUE not found, so URI must be present
 				elif not 'URI' in self.mContent[line]:
 					missing = True
-					lineNums.append('EXT-X-SESSION-DATA Must have URI formatted as JSON or a VALUE line= ' + str(line))
+					lineNums.append('EXT-X-SESSION-DATA Must have URI formatted as JSON or a VALUE line= ' + str(line + 1))
 				tagList.append(self.mContent[line])
 				multiLines.append(line)
 		if len(tagList) > 0:  #If no tags found not an issue
@@ -390,11 +390,13 @@ class Playlist(object):
 					if dIDList[k] == dIDList[j] and langList[k] == langList[j]:
 						multiples = True
 			if multiples:
+				for j in range(0, len(multiLines)):  #text file starts counting at 1 not zero
+					multiLines[j] = multiLines[j] + 1
 				lineNums.append('DATA-ID:LANGUAGE Lines to check for duplicates= ' + str(multiLines))
 						
 			logging.info("<<-------------------++ mSessionData possible multiples")
 		logging.info("<<-----------------------------+++ Exiting mSessionData")
-		return dCheck, json, uri, multiples, lineNums
+		return dCheck, json, uri, missing, multiples, lineNums
 		
 	def mMediaMaster(self, validator):
 		#The EXT-X-INDEPENDENT-SEGMENTS tag and EXT-X-START tag may appear in either
@@ -635,7 +637,8 @@ class MasterPlaylist(Playlist):
 	# mIDCheck = Text result of EXT-X-SESSION-DATA tag DATA-ID attribute from SessionDataCheck()
 	# mJSONCk = Text result of URI attribute JSON formatted from SessionDataCheck()
 	# mURICk = Text result of both VALUE and URI attribute from SessionDataCheck()
-	# mURI = Text result of URI attribute from SessionDataCheck()
+	# mMultCk = Text result of LANGUAGE attribute from SessionDataCheck()
+	# mMissCk = Text result of URI - JSON & VALUE (missing) from SessionDataCheck()
 	# mSegTag = Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
 	# mStartTag = Text result of START tags check in MediaMasterCheck()
 	# mTimeTag = Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
@@ -966,7 +969,7 @@ class SessionDataCheck(Validator):
 		errorLines = []
 		errorLines.clear
 		if pList.master:
-			idCheck, jsonCk, uriCk, multCk, errorLines = pList.mSessionData(self)
+			idCheck, jsonCk, uriCk, missCk, multCk, errorLines = pList.mSessionData(self)
 			if idCheck or jsonCk or uriCk or multCk:
 				for line in range(0, len(errorLines)):
 					pList.mSessionDataLines.append(errorLines[line])
@@ -986,7 +989,7 @@ class SessionDataCheck(Validator):
 				pList.checkResults.append('<<-----FAILED: TAG may NOT have VALUE and URI attribute')
 				pList.mURICk = 'FAILED: TAG may NOT have VALUE and URI attribute'
 			else:
-				pList.checkResults.append('<<-----PASSED: VALUE/URI check')
+				pList.checkResults.append('<<-----PASSED: Concurrent VALUE/URI check')
 				pList.mURICk = 'PASSED: VALUE/URI check'
 			if multCk:
 				pList.checkResults.append('<<-----FAILED: Multiple DATA-ID attributes with same LANGUAGE')
@@ -994,6 +997,10 @@ class SessionDataCheck(Validator):
 			else:
 				pList.checkResults.append('<<-----PASSED: Multiple DATA-ID/LANGUAGE check')
 				pList.mMultCk = 'PASSED: Multiple DATA-ID/LANGUAGE check'
+			if missCk:
+				pList.mMissCk = 'FAILED: Must have VALUE or URI attribute'
+			else:
+				pList.mMissCk = 'PASSED: Must have VALUE or URI attribute'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----EXT-X-SESSION-DATA Tag Validation----->>')
 		pList.checkResults.append('')
@@ -1603,6 +1610,21 @@ def screenPrint (playList):
 			print('EXT-X-I-FRAME-STREAM-INF errors on lines: ')
 			for i in range(0, len(playList.mIFrameLines)):
 				print('\t', playList.mIFrameLines[i])
+		print('')
+	if playList.master:
+		print('-----<<SESSION DATA CHECK>>-----')
+		print('For the given URL: ', playList.suppliedURL)
+		print('')
+		print('\t\t\t', playList.mIDCheck)
+		print('\t\t\t', playList.mJSONCk)
+		print('\t\t\t', playList.mURICk)
+		print('\t\t\t', playList.mMultCk)
+		print('\t\t\t', playList.mMissCk)
+		if len(playList.mSessionDataLines) > 0:
+			print('----------')
+			print('EXT-X-SESSION-DATA errors on lines: ')
+			for i in range(0, len(playList.mSessionDataLines)):
+				print('\t', playList.mSessionDataLines[i])
 		print('')
 					
 					
