@@ -1515,6 +1515,7 @@ def screenPrint (playList):
 		print('\t\t\t', playList.compProgram)
 		print('\t\t\t', playList.compCache)
 		print('----------')
+		print('Variant List:')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].compCheckV2)
 			print('\t\t\t', playList.variantList[i].compCheckV3)
@@ -1547,6 +1548,7 @@ def screenPrint (playList):
 	if playList.master:
 		print(playList.mTagsResult)
 		print('----------')
+		print('Variant List:')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].vTagsResult)
 		print('')
@@ -1576,6 +1578,7 @@ def screenPrint (playList):
 		print('\t\t\t', playList.mResultLine)
 		print('\t\t\t', playList.mResultBW)
 		print('----------')
+		print('Variant List:')
 		for i in range(0, len(playList.variantList)):
 			print(playList.variantURLs[i], '\t', playList.variantList[i].vResultTag)
 		print('')
@@ -1626,6 +1629,39 @@ def screenPrint (playList):
 			for i in range(0, len(playList.mSessionDataLines)):
 				print('\t', playList.mSessionDataLines[i])
 		print('')
+	print('-----<<MEDIA MASTER CHECK>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	print('')
+	if playList.master:
+		print('\t\t\t', playList.mSegTag)
+		print('\t\t\t', playList.mStartTag)
+		print('\t\t\t', playList.mTimeTag)
+		print('----------')
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], '\t', playList.variantList[i].vSegTag)
+			print('\t\t\t', playList.variantList[i].vStartTag)
+			print('\t\t\t', playList.variantList[i].vTimeTag)
+		if len(playList.mMediaMasterLines) > 0:
+			print(playLIst.suppliedURL, ' Media-Master errors on lines: ')
+			for i in range(0, len(playList.mMediaMasterLines)):
+				print(playList.mMediaMasterLines[i])
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vMediaMasterLines) > 0:
+				print(playList.variantURLs[i], ' Media-Master errors on lines: ')
+				for k in range(0, len(playList.variantList[i].vMediaMasterLines)):
+					print('\t', playList.variantList[i].vMediaMasterLines[k])
+	else:
+		print('\t\t\t', playList.vSegTag)
+		print('\t\t\t', playList.vStartTag)
+		print('\t\t\t', playList.vTimeTag)
+		print('')
+		if len(playList.vMediaMasterLines) > 0:
+			print(playList.suppliedURL, ' Media-Master errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vMediaMasterLines)):
+				print('\t', playList.vMediaMasterLines[i])
+	print('')
 					
 					
 	print('<<##--------------- End of Report ---------------##>>')
