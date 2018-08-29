@@ -911,6 +911,9 @@ class StreamInfCheck(Validator):
 			else:
 				pList.checkResults.append('<<----- FAILED: BANDWIDTH attribute missing in tag')
 				pList.mResultBW = 'FAILED: BANDWIDTH attribute missing in tag'
+			for variant in range(0, len(pList.variantList)):
+				streamCheck = StreamInfCheck()
+				pList.variantList[variant].accept(streamCheck)
 		else:
 			resultTag, errorLines = pList.vStreamInf(self)
 			if resultTag:
@@ -1537,15 +1540,48 @@ def screenPrint (playList):
 		print('')
 		if len(playList.mTagsErrorLines) > 0:
 			print('----------')
-			print(playList.suppliedURL, ' mixed tags errors on lines: ', playList.mTagsErrorLines)
+			print(playList.suppliedURL, ' mixed tags errors on lines: ')
+			for i in range(0, len(playList.mTagsErrorLines)):
+				print(playList.mTagsErrorLines[i])
 		for i in range(0, len(playList.variantList)):
 			if len(playList.variantList[i].vTagsErrorLines) > 0:
-				print(playList.variantURLs[i], ' mixed tags errors on lines: ', \
-					playList.variantList[i].vTagsErrorLines)
+				print(playList.variantURLs[i], ' mixed tags errors on lines: ')
+				for k in range(0, len(playList.variantList[i].vTagsErrorLines)):
+					print(playList.variantList[i].vTagsErrorLines[k])
 	else:
 		print(playList.vTagsResult)
 		if len(playList.vTagsErrorLines) > 0:
-			print(playList.suppliedURL, ' mixed tags errors on lines: ', playList.vTagsErrorLines)
+			print(playList.suppliedURL, ' mixed tags errors on lines: ')
+			for i in range(0, len(playList.vTagsErrorLines)):
+				print(playList.vTagsErrorLines[i])
+	print('')
+	print('-----<<STREAM INF CHECK>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	if playList.master:
+		print(playList.mResultLine)
+		print(playList.mResultBW)
+		print('----------')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i], '\t', playList.variantList[i].vResultTag)
+		print('')
+		if len(playList.mStreamInfLines) > 0:
+			print('----------')
+			print(playList.suppliedURL, ' stream INF errors on lines: ')
+			for i in range(0, len(playList.mStreamInfLines)):
+				print(playList.mStreamInfLines[i])
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vStreamInfLines) > 0:
+				print(playList.variantURLs[i], ' stream INF errors on lines: ')
+				for k in range(0, len(playList.variantList[i].vStreamInfLines)):
+					print(playList.variantList[i].vStreamInfLines[k])
+				print('')
+	else:
+		print(playList.vResultTag)
+		if len(playList.vStreamInfLines) > 0:
+			print(playList.suppliedURL, ' stream INF errors on lines: ')
+			for i in range(0, len(playList.vStreamInfLines)):
+				print(playList.vStreamInfLines[i])
+	print('')
 					
 					
 	print('<<##--------------- End of Report ---------------##>>')
