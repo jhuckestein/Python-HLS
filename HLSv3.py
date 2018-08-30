@@ -63,7 +63,7 @@ import os
 ##End package import section
 
 ##Set up logging for the program
-logging.basicConfig(filename='Hlsv2.log', level=logging.DEBUG)
+logging.basicConfig(filename='Hlsv3.log', level=logging.DEBUG)
 
 ##Class definitions for the playlist hierarchy
 class Playlist(object):
@@ -413,13 +413,13 @@ class Playlist(object):
 		for line in range(0, len(self.mContent)):
 			if self.mContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
 				segCount += 1
-				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line))
+				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line+1))
 			elif self.mContent[line].startswith('#EXT-X-START'):
 				startCount += 1
 				lineNums.append('EXT-X-START on line= ' + str(line))
 				if 'TIME-OFFSET' not in self.mContent[line]:
 					tOffset = True
-					lineNums.append('EXT-X-START tag missing on line= ' + str(line))
+					lineNums.append('EXT-X-START tag missing on line= ' + str(line+1))
 		if segCount > 1:
 			segments = True
 		if startCount > 1:
@@ -442,13 +442,13 @@ class Playlist(object):
 		for line in range(0, len(self.vContent)):
 			if self.vContent[line].startswith('#EXT-X-INDEPENDENT-SEGMENTS'):
 				segCount += 1
-				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line))
+				lineNums.append('EXT-X-INDEPENDENT-SEGMENTS on line=' + str(line+1))
 			elif self.vContent[line].startswith('#EXT-X-START'):
 				startCount += 1
 				lineNums.append('EXT-X-START on line= ' + str(line))
 				if 'TIME-OFFSET' not in self.vContent[line]:
 					tOffset = True
-					lineNums.append('EXT-X-START tag missing on line= ' + str(line))
+					lineNums.append('EXT-X-START tag missing on line= ' + str(line+1))
 		if segCount > 1:
 			segments = True
 		if startCount > 1:
@@ -474,16 +474,16 @@ class Playlist(object):
 				check = True
 				count = count + 1
 				if count == 1:
-					lineNums.append('First EXT-X-TARGETDURATION tag found on line= ' + str(line))
+					lineNums.append('First EXT-X-TARGETDURATION tag found on line= ' + str(line+1))
 				maxDuration = float(self.vContent[line].strip('#EXT-X-TARGETDURATION:'))
 				if count > 1:
 					multTag = True
-					lineNums.append('Extra EXT-X-TARGETDURATION tag found on line= ' + str(line))
+					lineNums.append('Extra EXT-X-TARGETDURATION tag found on line= ' + str(line+1))
 			if self.vContent[line].startswith('#EXTINF:'):
 				duration = float(self.vContent[line].strip('#EXTINF:,'))
 				if duration > maxDuration:
 					durationCheck = True
-					lineNums.append('EXTINF value exceeds Max on line= ' + str(line))
+					lineNums.append('EXTINF value exceeds Max on line= ' + str(line+1))
 		logging.info("<<------------------------------++ Exiting vTargetDuration")
 		return check, multTag, durationCheck, lineNums
 	
@@ -504,9 +504,9 @@ class Playlist(object):
 				count = count + 1
 				if not medSeg:
 					check = True
-					lineNums.append('EXT-X-MEDIA-SEQUENCE found before Media Segment line= ' + str(line))
+					lineNums.append('EXT-X-MEDIA-SEQUENCE found before Media Segment line= ' + str(line+1))
 				else:
-					lineNums.append('EXT-X-MEDIA-SEQUENCE found on line= ' + str(line))
+					lineNums.append('EXT-X-MEDIA-SEQUENCE found on line= ' + str(line+1))
 		if count > 1:
 			multTag = True
 		logging.info("<<------------------------------++ Exiting vMediaSequence")
@@ -529,9 +529,9 @@ class Playlist(object):
 				count = count + 1
 				if not medSeg:
 					check = True
-					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found before first media segment on line= ' + str())
+					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found before first media segment on line= ' + str(line+1))
 				else:
-					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str())
+					lineNums.append('EXT-X-DISCONTINUITY-SEQUENCE found on line= ' + str(line+1))
 		if count > 1:
 			multTag = True
 		logging.info("<<------------------------------++ Exiting vDiscontinuitySequence")
@@ -550,7 +550,7 @@ class Playlist(object):
 				check = True
 			if self.vContent[line].startswith('#EXT-X-MAP'):
 				medSeg = True
-				lineNums.append('EXT-X-MAP missing on line= ' + str(line))
+				lineNums.append('EXT-X-MAP missing on line= ' + str(line+1))
 		logging.info("<<------------------------------++ Exiting vIFramesOnly")
 		return check, medSeg, lineNums
 		
@@ -1254,7 +1254,39 @@ def clearVariant(playL):
 	
 	#Now Variant specific attributes are zero-d out
 	#playL.type.clear()     - turn on when implemented
+	del playL.vVersionCk # Text results of VersionCheck()
+	del playL.compCheckV2 # Text results Version 2+ if EXT-X-KEY:IV tag
+	del playL.compCheckV3 # Text results Version 3+ if floating point EXTINF values
+	del playL.compCheckV4 # Text results Version 4+ EXT-X-BYTERANGE or EXT-X-I-FRAMES-ONLY tags
+	del playL.compCheckV5 # Text results Version 5+ using EXT-X-MAP
+	del playL.compCheckV6 # Text results Version 6 ->EXT-X-MAP using EXT-X-I-FRAMES-ONLY
+	del playL.compCheckV7 # Text results Version 7+ EXT-X-ALLOW-CACHE removed
+	del playL.vTagsResult # Text result from MixTagsCheck()
+	del playL.vResultTag # Text result from StreamInfCheck()
+	del playL.vSegTag # Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
+	del playL.vStartTag # Text result of START tags check in MediaMasterCheck()
+	del playL.vTimeTag # Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
+	del playL.vTagCheck # Text result for EXT-X-TARGETDURATION Tag in TargetDurationCheck()
+	del playL.vMultiTag # Text result for Multiple EXT-X-TARGETDURATION Tags in TargetDurationCheck()
+	del playL.vDurCheck # Text result for EXTINF duration values in TargetDurationCheck()
+	#del playL.vTCount # Text result (exists if) EXT-X-MEDIA-SEQUENCE is NOT present for MediaSequenceCheck()
+	del playL.vMedTagCheck # Text result of EXT-X-MEDIA-SEQUENCE appears before media segments in MediaSequenceCheck()
+	#del playL.vMultiSeqTag # Text result (exists if) Multiple EXT-X-MEDIA-SEQUENCE tags found in MediaSequenceCheck()
+	#del playL.vDSTCount # Text result (exists if) EXT-X-DISCONTINUITY-SEQUENCE is NOT present from DiscontinuitySequenceCheck()
+	#del playL.vDSTagCheck # Text result EXT-X-DISCONTINUITY-SEQUENCE appears before media segments from DiscontinuitySequenceCheck()
+	#del playL.vDSMultiCheck # Text result (exists if) Multiple EXT-X-DISCONTINUITY-SEQUENCE tags from DiscontinuitySequenceCheck()
+	#del playL.vFrameCheck # Text result (exists if) EXT-X-I-FRAMES-ONLY tag NOT used from IFramesOnlyCheck()
+	del playL.vMediaSeg # Text result for EXT-X-MAP tag in IFramesOnlyCheck()
 	playL.vContent.clear()
+	playL.verCkErrorLines.clear()  #Lists the lines tags were found for VersionCheck()
+	playL.verCompCkErrorLines.clear() #Tracks which lines were errors for VerCompatCheck()
+	playL.vTagsErrorLines.clear()   #Tracks which lines were errors for MixTagsCheck()
+	playL.vStreamInfLines.clear()   #Tracks which lines were errors for StreamInfCheck()
+	playL.vMediaMasterLines.clear() #Tracks which lines were errors for MediaMasterCheck()
+	playL.vTargetDurationLines.clear() #Tracks which lines were errors for TargetDurationCheck()
+	playL.vMediaSequenceLines.clear() #Tracks which lines were errors for MediaSequenceCheck()
+	playL.vDiscSequenceLines.clear()  #Tracks which lines were errors for DiscontinuitySequenceCheck()
+	playL.vIFramesOnlyLines.clear()  #Tracks which lines were errors for IFramesOnlyCheck()
 	logging.info("++----------------------------------->> Leaving clearVariant")
 	return playL
 
@@ -1662,6 +1694,23 @@ def screenPrint (playList):
 			for i in range(0, len(playList.vMediaMasterLines)):
 				print('\t', playList.vMediaMasterLines[i])
 	print('')
+	print('-----<<TARGET DURATION CHECK>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	print('')
+	if playList.master:
+		#then just go through the variant list and print the output
+		print('----------')
+		print('Variant List:')
+	else:
+		print('\t\t\t', playList.vTagCheck)
+		print('\t\t\t', playList.vMultiTag)
+		print('\t\t\t', playList.vDurCheck)
+		print('')
+		if len(playList.vTargetDurationLines) > 0:
+			print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vTargetDurationLines)):
+				print('\t', playList.vTargetDurationLines[i])
 					
 					
 	print('<<##--------------- End of Report ---------------##>>')
