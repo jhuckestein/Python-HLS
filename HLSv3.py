@@ -1232,9 +1232,34 @@ def clearMaster(playL):
 	del playL.playVersion
 	
 	# Address Master specific attributes and zero out
+	del playL.mVersionCk # Text results of VersionCheck()
+	del playL.compService # Text results of SERVICE values for INSTREAM-ID attribute of EXT-X-MEDIA in VerCompatCheck()
+	del playL.compProgram # Text results of PROGRAM-ID attribute for EXT-X-STREAM-INF removed
+	del playL.compCache # Text results of Version 7+ EXT-X-ALLOW-CACHE removed
+	del playL.mTagsResult # Text results of MixTagsCheck
+	del playL.mResultLine # Text result of EXT-X-STREAM-INF tag followed by URI
+	del playL.mResultBW # Text result of BANDWIDTH attribute present in tag EXT-X-STREAM-INF
+	del playL.mBWidth # Text result of Bandwidth attribute present for IFrameCheck()
+	del playL.mURI # Text result of URI attribute present for IFrameCheck()
+	del playL.mIDCheck # Text result of EXT-X-SESSION-DATA tag DATA-ID attribute from SessionDataCheck()
+	del playL.mJSONCk # Text result of URI attribute JSON formatted from SessionDataCheck()
+	del playL.mURICk # Text result of both VALUE and URI attribute from SessionDataCheck()
+	del playL.mMultCk # Text result of LANGUAGE attribute from SessionDataCheck()
+	del playL.mMissCk # Text result of URI - JSON & VALUE (missing) from SessionDataCheck()
+	del playL.mSegTag # Text result of INDEPENDENT-SEGMENTS tags check in MediaMasterCheck()
+	del playL.mStartTag # Text result of START tags check in MediaMasterCheck()
+	del playL.mTimeTag # Text result of REQUIRED TIME-OFFSET tag check in MediaMasterCheck()
+	
 	playL.variantList.clear()
 	playL.variantURLs.clear()
 	playL.mContent.clear()
+	playL.verCkErrorLines.clear #Tracks which lines were errors for VersionCheck()
+	playL.verCompCkErrorLines.clear #Tracks which lines were errors for VerCompatCheck()
+	playL.mTagsErrorLines.clear  #List of error lines from MixTagsCheck()
+	playL.mStreamInfLines.clear  #List of error lines from StreamInfCheck()
+	playL.mIFrameLines.clear  #List of error lines from IFrameCheck()
+	playL.mSessionDataLines.clear #List of error lines from SessionDataCheck()
+	playL.mMediaMasterLines.clear #List of error lines from MediaMasterCheck()
 	logging.info("++----------------------------------->> Leaving clearMaster")
 	return playL
 #
@@ -1276,7 +1301,7 @@ def clearVariant(playL):
 	#del playL.vDSTagCheck # Text result EXT-X-DISCONTINUITY-SEQUENCE appears before media segments from DiscontinuitySequenceCheck()
 	#del playL.vDSMultiCheck # Text result (exists if) Multiple EXT-X-DISCONTINUITY-SEQUENCE tags from DiscontinuitySequenceCheck()
 	#del playL.vFrameCheck # Text result (exists if) EXT-X-I-FRAMES-ONLY tag NOT used from IFramesOnlyCheck()
-	del playL.vMediaSeg # Text result for EXT-X-MAP tag in IFramesOnlyCheck()
+	#del playL.vMediaSeg # Text result for EXT-X-MAP tag in IFramesOnlyCheck()
 	playL.vContent.clear()
 	playL.verCkErrorLines.clear()  #Lists the lines tags were found for VersionCheck()
 	playL.verCompCkErrorLines.clear() #Tracks which lines were errors for VerCompatCheck()
