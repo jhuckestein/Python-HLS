@@ -610,7 +610,7 @@ class VariantPlaylist(Playlist):
 	vTagsErrorLines = []   #Tracks which lines were errors for MixTagsCheck()
 	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
-	vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
+	#vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
 	vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
 	vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
@@ -1080,17 +1080,25 @@ class TargetDurationCheck(Validator):
 		logging.info("++------------------------->> TargetDurationCheck Validation")
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		errorLines = []
-		errorLines.clear
+		print('the object is: ', pList)
 		if pList.master:
+			logging.info("++------------------------->> TargetDurationCheck Validation for Master started")
 			for variant in range(0, len(pList.variantList)):
 				varTargDurCheck = TargetDurationCheck()
 				pList.variantList[variant].accept(varTargDurCheck)
+			logging.info("++------------------------->> TargetDurationCheck Validation for Master finished")
 		else:
+			logging.info("++------------------------->> TargetDurationCheck Validation for Variant started")
+			errorLines = []
+			errorLines.clear()
+			pList.vTargetDurationLines = []
+			
 			tagCheck, multiTag, durCheck, errorLines = pList.vTargetDuration(self)
-			if not tagCheck or multiTag or durCheck:
+			if multiTag or durCheck:
 				for line in range(0, len(errorLines)):
 					pList.vTargetDurationLines.append(errorLines[line])
+			else:
+				pList.vTargetDurationLines.append('No error lines found')
 			pList.checkResults.append('<<----- Variant Playlist: ' + pList.suppliedURL)
 			if tagCheck:
 				pList.checkResults.append('<<-----PASSED: TARGETDURATION Tag is present')
@@ -1726,6 +1734,18 @@ def screenPrint (playList):
 		#then just go through the variant list and print the output
 		print('----------')
 		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+			print('\t\t\t', playList.variantList[i].vTagCheck)
+			print('\t\t\t', playList.variantList[i].vMultiTag)
+			print('\t\t\t', playList.variantList[i].vDurCheck)
+			print('')
+		print('----------')
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vTargetDurationLines) > 1:  
+				print(playList.variantURLs[j], ' Target-Duration errors on lines: ')
+				for k in range(0, len(playList.variantList[j].vTargetDurationLines)):
+					print('\t', playList.variantList[j].vTargetDurationLines[k])
 	else:
 		print('\t\t\t', playList.vTagCheck)
 		print('\t\t\t', playList.vMultiTag)
