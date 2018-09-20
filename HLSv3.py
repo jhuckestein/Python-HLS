@@ -613,7 +613,7 @@ class VariantPlaylist(Playlist):
 	#vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	#vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
 	#vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
-	vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
+	#vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
 	
 	
 class MasterPlaylist(Playlist):
@@ -1191,10 +1191,6 @@ class DiscontinuitySequenceCheck(Validator):
 			errorLines.clear
 			pList.vDiscSequenceLines = []
 			tCount, tagCheck, multiTag, errorLines = pList.vDiscontinuitySequence(self)
-			print('tCount', tCount)
-			print('tagCheck', tagCheck)
-			print('multi ', multiTag)
-			print(errorLines)
 			if not tagCheck or multiTag:
 				for line in range(0, len(errorLines)):
 					pList.vDiscSequenceLines.append(errorLines[line])
@@ -1229,22 +1225,28 @@ class IFramesOnlyCheck(Validator):
 		logging.info("++------------------------->> IFramesOnlyCheck Validation")
 		pList.checkResults.append('<<-----IFramesOnlyCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		errorLines = []
-		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				iFrameOnlyCk = IFramesOnlyCheck()
 				pList.variantList[variant].accept(iFrameOnlyCk)
 		else:
+			pList.vIFramesOnlyLines = []
+			errorLines = []
+			errorLines.clear
 			frameCheck, mediaSeg, errorLines = pList.vIFramesOnly(self)
-			if not mediaSeg:
+			print('frameCheck ', frameCheck)
+			print('media ', mediaSeg)
+			print(errorLines)
+			if mediaSeg:
 				for line in range(0, len(errorLines)):
 					pList.vIFramesOnlyLines.append(errorLines[line])
 			pList.checkResults.append('<<-----Variant Playlist: ' + pList.suppliedURL)
 			if not frameCheck:
 				pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY tag NOT used')
 				pList.vFrameCheck = 'PASSED: EXT-X-I-FRAMES-ONLY tag NOT used'
+				pList.vMediaSeg = 'PASSED: Tag not used'
 			else:
+				pList.vFrameCheck = 'EXT-X-I-FRAMES-ONLY is present'
 				if mediaSeg:
 					pList.checkResults.append('<<-----PASSED: EXT-X-I-FRAMES-ONLY used with media initializaion')
 					pList.vMediaSeg = 'PASSED: EXT-X-I-FRAMES-ONLY used with media initializaion'
@@ -1844,6 +1846,34 @@ def screenPrint (playList):
 			print('----------')
 			for i in range(0, len(playList.vDiscSequenceLines)):
 				print('\t', playList.vDiscSequenceLines[i])
+	print('')
+	print('-----<<IFRAME ONLY CHECKS>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	print('')
+	if playList.master:
+		#then just go through the variant list and print the output
+		print('----------')
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+			print('\t\t\t', playList.variantList[i].vFrameCheck)
+			print('\t\t\t', playList.variantList[i].vMediaSeg)
+			print('')
+		print('----------')
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vIFramesOnlyLines) > 1:  
+				print(playList.variantURLs[j], ' IFrame Only errors on lines: ')
+				for k in range(0, len(playList.variantList[j].vIFramesOnlyLines)):
+					print('\t', playList.variantList[j].vIFramesOnlyLines[k])
+	else:
+		print('\t\t\t', playList.vFrameCheck)
+		print('\t\t\t', playList.vMediaSeg)
+		print('')
+		if len(playList.vIFramesOnlyLines) > 0:
+			print(playList.suppliedURL, ' IFrame Only errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vIFramesOnlyLines)):
+				print('\t', playList.vIFramesOnlyLines[i])
 	print('')
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
