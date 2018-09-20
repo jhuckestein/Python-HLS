@@ -612,7 +612,7 @@ class VariantPlaylist(Playlist):
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
 	#vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
 	#vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
-	vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
+	#vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
 	vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
 	
 	
@@ -1187,7 +1187,14 @@ class DiscontinuitySequenceCheck(Validator):
 				varDisSeqCheck = DiscontinuitySequenceCheck()
 				pList.variantList[variant].accept(varDisSeqCheck)
 		else:
+			errorLines = []
+			errorLines.clear
+			pList.vDiscSequenceLines = []
 			tCount, tagCheck, multiTag, errorLines = pList.vDiscontinuitySequence(self)
+			print('tCount', tCount)
+			print('tagCheck', tagCheck)
+			print('multi ', multiTag)
+			print(errorLines)
 			if not tagCheck or multiTag:
 				for line in range(0, len(errorLines)):
 					pList.vDiscSequenceLines.append(errorLines[line])
@@ -1195,15 +1202,21 @@ class DiscontinuitySequenceCheck(Validator):
 			if tCount == 0:
 				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE is NOT present')
 				pList.vDSTCount = 'PASSED: EXT-X-DISCONTINUITY-SEQUENCE is NOT present'
-			elif tagCheck:
-				pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments')
-				pList.DSTagCheck = 'PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments'
-			elif not tagCheck:
-				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag')
-				pList.DSTagCheck = 'FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag'
-			elif multiTag:
-				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed')
-				pList.vDSMultiCheck = 'FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed'
+				pList.DSTagCheck = 'PASSED: Tag not used'
+				pList.vDSMultiCheck = 'PASSED: Tag not used'
+			else:
+				pList.vDSTCount = 'EXT-X-DISCONTINUITY-SEQUENCE tag is used'
+				if tagCheck:
+					pList.checkResults.append('<<-----PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments')
+					pList.DSTagCheck = 'PASSED: EXT-X-DISCONTINUITY-SEQUENCE appears before media segments'
+				else:
+					pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag')
+					pList.DSTagCheck = 'FAILED: Media Segments appear before EXT-X-DISCONTINUITY-SEQUENCE tag'
+				if multiTag:
+					pList.checkResults.append('<<-----FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed')
+					pList.vDSMultiCheck = 'FAILED: Multiple EXT-X-DISCONTINUITY-SEQUENCE tags not allowed'
+				else:
+					pList.vDSMultiCheck = 'PASSED: one instance of EXT-X-DISCONTINUITY-SEQUENCE tag'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----DiscontinuitySequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
@@ -1802,8 +1815,36 @@ def screenPrint (playList):
 			for i in range(0, len(playList.vMediaSequenceLines)):
 				print('\t', playList.vMediaSequenceLines[i])
 	print('')
-					
-					
+	print('-----<<DISCONTINUITY SEQUENCE CHECKS>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	print('')
+	if playList.master:
+		#then just go through the variant list and print the output
+		print('----------')
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+			print('\t\t\t', playList.variantList[i].vDSTCount)
+			print('\t\t\t', playList.variantList[i].DSTagCheck)
+			print('\t\t\t', playList.variantList[i].vDSMultiCheck)
+			print('')
+		print('----------')
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vDiscSequenceLines) > 1:  
+				print(playList.variantURLs[j], ' Discontinuity Sequence errors on lines: ')
+				for k in range(0, len(playList.variantList[j].vDiscSequenceLines)):
+					print('\t', playList.variantList[j].vDiscSequenceLines[k])
+	else:
+		print('\t\t\t', playList.vDSTCount)
+		print('\t\t\t', playList.DSTagCheck)
+		print('\t\t\t', playList.vDSMultiCheck)
+		print('')
+		if len(playList.vDiscSequenceLines) > 0:
+			print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vDiscSequenceLines)):
+				print('\t', playList.vDiscSequenceLines[i])
+	print('')
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
 	print('')
