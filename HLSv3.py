@@ -611,7 +611,7 @@ class VariantPlaylist(Playlist):
 	vStreamInfLines = []   #Tracks which lines were errors for StreamInfCheck()
 	vMediaMasterLines = [] #Tracks which lines were errors for MediaMasterCheck()
 	#vTargetDurationLines = [] #Tracks which lines were errors for TargetDurationCheck()
-	vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
+	#vMediaSequenceLines = [] #Tracks which lines were errors for MediaSequenceCheck()
 	vDiscSequenceLines = []  #Tracks which lines were errors for DiscontinuitySequenceCheck()
 	vIFramesOnlyLines = []  #Tracks which lines were errors for IFramesOnlyCheck()
 	
@@ -1080,7 +1080,6 @@ class TargetDurationCheck(Validator):
 		logging.info("++------------------------->> TargetDurationCheck Validation")
 		pList.checkResults.append('<<-----TargetDurationCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		print('the object is: ', pList)
 		if pList.master:
 			logging.info("++------------------------->> TargetDurationCheck Validation for Master started")
 			for variant in range(0, len(pList.variantList)):
@@ -1091,6 +1090,10 @@ class TargetDurationCheck(Validator):
 			logging.info("++------------------------->> TargetDurationCheck Validation for Variant started")
 			errorLines = []
 			errorLines.clear()
+			#vTargetDurationLines is declared here to ensure it is associated only with
+			#the current Variant.  The class definition presumably due to the Visitor pattern produced
+			#weird results where the list continued to be overwritten each time.
+			
 			pList.vTargetDurationLines = []
 			
 			tagCheck, multiTag, durCheck, errorLines = pList.vTargetDuration(self)
@@ -1129,14 +1132,19 @@ class MediaSequenceCheck(Validator):
 		logging.info("++------------------------->> MediaSequenceCheck Validation")
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
-		errorLines = []
-		errorLines.clear
 		if pList.master:
 			for variant in range(0, len(pList.variantList)):
 				varMedSeqCheck = MediaSequenceCheck()
 				pList.variantList[variant].accept(varMedSeqCheck)
 		else:
+			errorLines = []
+			errorLines.clear
+			pList.vMediaSequenceLines = []
 			tCount, tagCheck, multiTag, errorLines = pList.vMediaSequence(self)
+			# print("tCount = ", tCount)
+			# print("tagCheck = ", tagCheck)
+			# print("multiTag = ", multiTag)
+			# print("errorLines = ", errorLines)
 			if not tagCheck or multiTag:
 				for line in range(0, len(errorLines)):
 					pList.vMediaSequenceLines.append(errorLines[line])
@@ -1144,15 +1152,22 @@ class MediaSequenceCheck(Validator):
 			if tCount == 0:
 				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE is NOT present')
 				pList.vTCount = 'PASSED: EXT-X-MEDIA-SEQUENCE is NOT present'
-			elif tagCheck:
-				pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments')
-				pList.vMedTagCheck = 'PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments'
-			elif not tagCheck:
-				pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag')
-				pList.vMedTagCheck = 'FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag'
-			elif multiTag:
-				pList.checkResults.append('<<-----FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed')
-				pList.vMultiSeqTag = 'FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed'
+				pList.vMedTagCheck = 'PASSED: Tag not used'
+				pList.vMultiSeqTag = 'PASSED: Tag not used'
+			else:
+				if tagCheck:
+					pList.vTCount = 'EXT-X-MEDIA-SEQUENCE tag was used'
+					pList.checkResults.append('<<-----PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments')
+					pList.vMedTagCheck = 'PASSED: EXT-X-MEDIA-SEQUENCE appears before media segments'
+				else:
+					pList.vTCount = 'EXT-X-MEDIA-SEQUENCE tag was used'
+					pList.checkResults.append('<<-----FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag')
+					pList.vMedTagCheck = 'FAILED: Media Segments appear before EXT-X-MEDIA-SEQUENCE tag'
+				if multiTag:
+					pList.checkResults.append('<<-----FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed')
+					pList.vMultiSeqTag = 'FAILED: Multiple EXT-X-MEDIA-SEQUENCE tags not allowed'
+				else:
+					pList.vMultiSeqTag = 'PASSED: One instance EXT-X-MEDIA-SEQUENCE tag'
 		pList.checkResults.append('')
 		pList.checkResults.append('<<-----MediaSequenceCheck Tag Validation----->>')
 		pList.checkResults.append('')
@@ -1756,6 +1771,37 @@ def screenPrint (playList):
 			print('----------')
 			for i in range(0, len(playList.vTargetDurationLines)):
 				print('\t', playList.vTargetDurationLines[i])
+	print('')
+	print('-----<<MEDIA SEQUENCE CHECKS>>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	print('')
+	if playList.master:
+		#then just go through the variant list and print the output
+		print('----------')
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+			print('\t\t\t', playList.variantList[i].vTCount)
+			print('\t\t\t', playList.variantList[i].vMedTagCheck)
+			print('\t\t\t', playList.variantList[i].vMultiSeqTag)
+			print('')
+		print('----------')
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vMediaSequenceLines) > 1:  
+				print(playList.variantURLs[j], ' Media Sequence errors on lines: ')
+				for k in range(0, len(playList.variantList[j].vMediaSequenceLines)):
+					print('\t', playList.variantList[j].vMediaSequenceLines[k])
+	else:
+		print('\t\t\t', playList.vTCount)
+		print('\t\t\t', playList.vMedTagCheck)
+		print('\t\t\t', playList.vMultiSeqTag)
+		print('')
+		if len(playList.vMediaSequenceLines) > 0:
+			print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vMediaSequenceLines)):
+				print('\t', playList.vMediaSequenceLines[i])
+	print('')
 					
 					
 	print('<<##--------------- End of Report ---------------##>>')
