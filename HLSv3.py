@@ -1948,23 +1948,38 @@ def createPDF(header, playList, fileName):
 			Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<VERSION CHECK>>-----')
-	# if playList.master:
-		# print('For the given URL: ', playList.suppliedURL, '\t', playList.mVersionCk)
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i], ' \t\t\t', playList.variantList[i].vVersionCk)
-		# print('')
-		# if len(playList.verCkErrorLines) > 0:
-			# print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
-		# for i in range(0, len(playList.variantList)):
-			# if len(playList.variantList[i].verCkErrorLines) > 0:
-				# print(playList.variantURLs[i], ' multiple tags on lines: ', playList.variantList[i].verCkErrorLines)
-	# else:
-		# print('For the given URL: ', playList.suppliedURL, '\t', playList.vVersionCk)
-		# if len(playList.verCkErrorLines) > 0:
-			# print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
-	# print('')
+	p = Paragraph('-----<<VERSION CHECK>>-----', style)
+	Story.append(p)
+	if playList.master:
+		line = 'For the given URL: ' + str(playList.suppliedURL) + '----->'+ str(playList.mVersionCk)
+		p = Paragraph(line, style)
+		Story.append(p)
+		p = Paragraph('Variant List:', style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '---------->' + str(playList.variantList[i].vVersionCk)
+			p = Paragraph(line, style)
+			Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.verCkErrorLines) > 0:
+			line = str(playList.suppliedURL) + ' multiple tags on lines: ' + str(playList.verCkErrorLines)
+			p = Paragraph(line, style)
+			Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].verCkErrorLines) > 0:
+				line = str(playList.variantURLs[i]) + ' multiple tags on lines: ' + str(playList.variantList[i].verCkErrorLines)
+				p = Paragraph(line, style)
+				Story.append(p)
+	else:
+		line = 'For the given URL: ' + str(playList.suppliedURL) + '----->' + str(playList.vVersionCk)
+		p = Paragraph(line, style)
+		Story.append(p)
+		if len(playList.verCkErrorLines) > 0:
+			line = str(playList.suppliedURL) + ' multiple tags on lines: ' + str(playList.verCkErrorLines)
+			p = Paragraph(line, style)
+			Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
 	# print('-----<<COMPATIBILITY CHECK>>-----')
 	# print('For the given URL: ', playList.suppliedURL)
 	# print('')
