@@ -1927,14 +1927,16 @@ def createPDF(header, playList, fileName):
 		Story.append(Spacer(1, 0.2*inch))
 	### Now add the playlist specific results to the 'Story'
 	if playList.master:
-		p = Paragraph('Variants listed in Master Playlist:', style)
+		line = 'Variants listed in Master Playlist:'
+		p = Paragraph(line, style)
 		Story.append(p)
 		for i in range(0, len(playList.variantList)):
 			p = Paragraph(playList.variantURLs[i], style)
 			Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
 	Story.append(Spacer(1, 0.2*inch))
-	p = Paragraph('-----<<HEADER CHECK>>-----', style)
+	line = '-----<=HEADER CHECK=>-----'
+	p = Paragraph(line, style)
 	Story.append(p)
 	line = 'For the given URL: ' + str(playList.suppliedURL) + '----->' + str(playList.ckHeader)
 	p = Paragraph(line, style)
@@ -1948,13 +1950,15 @@ def createPDF(header, playList, fileName):
 			Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
 	Story.append(Spacer(1, 0.2*inch))
-	p = Paragraph('-----<<VERSION CHECK>>-----', style)
+	line = '-----<=VERSION CHECK=>-----'
+	p = Paragraph(line, style)
 	Story.append(p)
 	if playList.master:
 		line = 'For the given URL: ' + str(playList.suppliedURL) + '----->'+ str(playList.mVersionCk)
 		p = Paragraph(line, style)
 		Story.append(p)
-		p = Paragraph('Variant List:', style)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
 		Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
 		for i in range(0, len(playList.variantList)):
@@ -1980,41 +1984,94 @@ def createPDF(header, playList, fileName):
 			p = Paragraph(line, style)
 			Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<COMPATIBILITY CHECK>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# print('\t\t\t', playList.compService)
-		# print('\t\t\t', playList.compProgram)
-		# print('\t\t\t', playList.compCache)
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i], '\t', playList.variantList[i].compCheckV2)
-			# print('\t\t\t', playList.variantList[i].compCheckV3)
-			# print('\t\t\t', playList.variantList[i].compCheckV4)
-			# print('\t\t\t', playList.variantList[i].compCheckV5)
-			# print('\t\t\t', playList.variantList[i].compCheckV6)
-			# print('\t\t\t', playList.variantList[i].compCheckV7)
-		# if len(playList.verCompCkErrorLines) > 0:
-			# print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
-		# for i in range(0, len(playList.variantList)):
-			# if len(playList.variantList[i].verCompCkErrorLines) > 0:
-				# print(playList.variantURLs[i], ' compatibility errors on lines: ')
-				# for k in range(0, len(playList.variantList[i].verCompCkErrorLines)):
-					# print('\t', playList.variantList[i].verCompCkErrorLines[k])
-	# else:
-		# print('\t\t\t', playList.compCheckV2)
-		# print('\t\t\t', playList.compCheckV3)
-		# print('\t\t\t', playList.compCheckV4)
-		# print('\t\t\t', playList.compCheckV5)
-		# print('\t\t\t', playList.compCheckV6)
-		# print('\t\t\t', playList.compCheckV7)
-		# if len(playList.verCompCkErrorLines) > 0:
-			# print(playLIst.suppliedURL, ' compatibility errors on lines: ')
-			# for i in range(0, len(playList.verCompCkErrorLines)):
-				# print('\t', playList.verCompCkErrorLines[i])
-	# print('')
+	line = '-----<=COMPATIBILITY CHECK=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		line = '---------->' + str(playList.compService)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compProgram)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCache)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].compCheckV2)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].compCheckV3)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].compCheckV4)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].compCheckV5)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].compCheckV6)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].compCheckV7)
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		if len(playList.verCompCkErrorLines) > 0:
+			line = str(playLIst.suppliedURL) + ' compatibility errors on lines: ' + str(playList.verCompCkErrorLines)
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].verCompCkErrorLines) > 0:
+				line = str(playList.variantURLs[i]) + ' compatibility errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[i].verCompCkErrorLines)):
+					line = '----->' + str(playList.variantList[i].verCompCkErrorLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+				Story.append(Spacer(1, 0.2*inch))
+	else:
+		line = '---------->' + str(playList.compCheckV2)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCheckV3)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCheckV4)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCheckV5)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCheckV6)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.compCheckV7)
+		p = Paragraph(line, style)
+		Story.append(p)
+		if len(playList.verCompCkErrorLines) > 0:
+			line = str(playLIst.suppliedURL) + ' compatibility errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.verCompCkErrorLines)):
+				line = '----->' + str(playList.verCompCkErrorLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
 	# print('-----<<MIXED TAGS CHECK>>-----')
 	# print('For the given URL: ', playList.suppliedURL)
 	# print('')
