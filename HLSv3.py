@@ -2290,6 +2290,7 @@ def createPDF(header, playList, fileName):
 			line = '---------->' + str(playList.variantList[i].vTimeTag)
 			p = Paragraph(line, style)
 			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
 		if len(playList.mMediaMasterLines) > 0:
 			line = str(playLIst.suppliedURL) + ' Media-Master errors on lines: '
 			p = Paragraph(line, style)
@@ -2325,71 +2326,109 @@ def createPDF(header, playList, fileName):
 			line = '----------'
 			p = Paragraph(line, style)
 			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
 			for i in range(0, len(playList.vMediaMasterLines)):
 				line = '----->' + str(playList.vMediaMasterLines[i])
 				p = Paragraph(line, style)
 				Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<TARGET DURATION CHECK>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# #then just go through the variant list and print the output
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i])
-			# print('\t\t\t', playList.variantList[i].vTagCheck)
-			# print('\t\t\t', playList.variantList[i].vMultiTag)
-			# print('\t\t\t', playList.variantList[i].vDurCheck)
-			# print('')
-		# print('----------')
-		# for j in range(0, len(playList.variantList)):
-			# if len(playList.variantList[j].vTargetDurationLines) > 1:  
-				# print(playList.variantURLs[j], ' Target-Duration errors on lines: ')
-				# for k in range(0, len(playList.variantList[j].vTargetDurationLines)):
-					# print('\t', playList.variantList[j].vTargetDurationLines[k])
-	# else:
-		# print('\t\t\t', playList.vTagCheck)
-		# print('\t\t\t', playList.vMultiTag)
-		# print('\t\t\t', playList.vDurCheck)
-		# print('')
-		# if len(playList.vTargetDurationLines) > 0:
-			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vTargetDurationLines)):
-				# print('\t', playList.vTargetDurationLines[i])
-	# print('')
-	# print('-----<<MEDIA SEQUENCE CHECKS>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# #then just go through the variant list and print the output
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i])
-			# print('\t\t\t', playList.variantList[i].vTCount)
-			# print('\t\t\t', playList.variantList[i].vMedTagCheck)
-			# print('\t\t\t', playList.variantList[i].vMultiSeqTag)
-			# print('')
-		# print('----------')
-		# for j in range(0, len(playList.variantList)):
-			# if len(playList.variantList[j].vMediaSequenceLines) > 1:  
-				# print(playList.variantURLs[j], ' Media Sequence errors on lines: ')
-				# for k in range(0, len(playList.variantList[j].vMediaSequenceLines)):
-					# print('\t', playList.variantList[j].vMediaSequenceLines[k])
-	# else:
-		# print('\t\t\t', playList.vTCount)
-		# print('\t\t\t', playList.vMedTagCheck)
-		# print('\t\t\t', playList.vMultiSeqTag)
-		# print('')
-		# if len(playList.vMediaSequenceLines) > 0:
-			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vMediaSequenceLines)):
-				# print('\t', playList.vMediaSequenceLines[i])
-	# print('')
+	line = '-----<=TARGET DURATION CHECK=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		#then just go through the variant list and print the output
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i])
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vTagCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vMultiTag)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vDurCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vTargetDurationLines) > 1:  
+				line = str(playList.variantURLs[j]) + ' Target-Duration errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[j].vTargetDurationLines)):
+					line = '----->' + str(playList.variantList[j].vTargetDurationLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+	else:
+		line = '---------->' + str(playList.vTagCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vMultiTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vDurCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vTargetDurationLines) > 0:
+			line = str(playList.suppliedURL) + ' Target-Duration errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.vTargetDurationLines)):
+				line = '----->' + str(playList.vTargetDurationLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	print('-----<=MEDIA SEQUENCE CHECKS=>-----')
+	print('For the given URL: ', playList.suppliedURL)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		#then just go through the variant list and print the output
+		print('----------')
+		print('Variant List:')
+		for i in range(0, len(playList.variantList)):
+			print(playList.variantURLs[i])
+			print('---------->', playList.variantList[i].vTCount)
+			print('---------->', playList.variantList[i].vMedTagCheck)
+			print('---------->', playList.variantList[i].vMultiSeqTag)
+			Story.append(Spacer(1, 0.2*inch))
+		print('----------')
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vMediaSequenceLines) > 1:  
+				print(playList.variantURLs[j], ' Media Sequence errors on lines: ')
+				for k in range(0, len(playList.variantList[j].vMediaSequenceLines)):
+					print('----->', playList.variantList[j].vMediaSequenceLines[k])
+	else:
+		print('---------->', playList.vTCount)
+		print('---------->', playList.vMedTagCheck)
+		print('---------->', playList.vMultiSeqTag)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vMediaSequenceLines) > 0:
+			print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			print('----------')
+			for i in range(0, len(playList.vMediaSequenceLines)):
+				print('----->', playList.vMediaSequenceLines[i])
+	Story.append(Spacer(1, 0.2*inch))
 	# print('-----<<DISCONTINUITY SEQUENCE CHECKS>>-----')
 	# print('For the given URL: ', playList.suppliedURL)
 	# print('')
