@@ -2257,39 +2257,79 @@ def createPDF(header, playList, fileName):
 				p = Paragraph(line, style)
 				Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
-	# print('-----<=MEDIA MASTER CHECK=>-----')
-	# print('For the given URL: ', playList.suppliedURL)
+	line = '-----<=MEDIA MASTER CHECK=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	# if playList.master:
-		# print('\t\t\t', playList.mSegTag)
-		# print('\t\t\t', playList.mStartTag)
-		# print('\t\t\t', playList.mTimeTag)
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i], '\t', playList.variantList[i].vSegTag)
-			# print('\t\t\t', playList.variantList[i].vStartTag)
-			# print('\t\t\t', playList.variantList[i].vTimeTag)
-		# if len(playList.mMediaMasterLines) > 0:
-			# print(playLIst.suppliedURL, ' Media-Master errors on lines: ')
-			# for i in range(0, len(playList.mMediaMasterLines)):
-				# print(playList.mMediaMasterLines[i])
-		# for i in range(0, len(playList.variantList)):
-			# if len(playList.variantList[i].vMediaMasterLines) > 0:
-				# print(playList.variantURLs[i], ' Media-Master errors on lines: ')
-				# for k in range(0, len(playList.variantList[i].vMediaMasterLines)):
-					# print('\t', playList.variantList[i].vMediaMasterLines[k])
-	# else:
-		# print('\t\t\t', playList.vSegTag)
-		# print('\t\t\t', playList.vStartTag)
-		# print('\t\t\t', playList.vTimeTag)
-		# print('')
-		# if len(playList.vMediaMasterLines) > 0:
-			# print(playList.suppliedURL, ' Media-Master errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vMediaMasterLines)):
-				# print('\t', playList.vMediaMasterLines[i])
-	# print('')
+	if playList.master:
+		line = '---------->' + str(playList.mSegTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.mStartTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.mTimeTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].vSegTag)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vStartTag)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vTimeTag)
+			p = Paragraph(line, style)
+			Story.append(p)
+		if len(playList.mMediaMasterLines) > 0:
+			line = str(playLIst.suppliedURL) + ' Media-Master errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.mMediaMasterLines)):
+				line = str(playList.mMediaMasterLines[i])
+				p = Paragraph(line, style)
+			Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vMediaMasterLines) > 0:
+				line + str(playList.variantURLs[i]) + ' Media-Master errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[i].vMediaMasterLines)):
+					line = '----->' + str(playList.variantList[i].vMediaMasterLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+	else:
+		line = '---------->' + str(playList.vSegTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vStartTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vTimeTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vMediaMasterLines) > 0:
+			line = str(playList.suppliedURL) + ' Media-Master errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.vMediaMasterLines)):
+				line = '----->' + str(playList.vMediaMasterLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
 	# print('-----<<TARGET DURATION CHECK>>-----')
 	# print('For the given URL: ', playList.suppliedURL)
 	# print('')
