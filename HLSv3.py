@@ -2280,6 +2280,7 @@ def createPDF(header, playList, fileName):
 		line = 'Variant List:'
 		p = Paragraph(line, style)
 		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
 		for i in range(0, len(playList.variantList)):
 			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].vSegTag)
 			p = Paragraph(line, style)
@@ -2348,6 +2349,7 @@ def createPDF(header, playList, fileName):
 		line = 'Variant List:'
 		p = Paragraph(line, style)
 		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
 		for i in range(0, len(playList.variantList)):
 			line = str(playList.variantURLs[i])
 			p = Paragraph(line, style)
@@ -2399,94 +2401,198 @@ def createPDF(header, playList, fileName):
 				p = Paragraph(line, style)
 				Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	print('-----<=MEDIA SEQUENCE CHECKS=>-----')
-	print('For the given URL: ', playList.suppliedURL)
+	line = '-----<=MEDIA SEQUENCE CHECKS=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
 	if playList.master:
 		#then just go through the variant list and print the output
-		print('----------')
-		print('Variant List:')
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
 		for i in range(0, len(playList.variantList)):
-			print(playList.variantURLs[i])
-			print('---------->', playList.variantList[i].vTCount)
-			print('---------->', playList.variantList[i].vMedTagCheck)
-			print('---------->', playList.variantList[i].vMultiSeqTag)
+			line = str(playList.variantURLs[i])
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vTCount)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vMedTagCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vMultiSeqTag)
+			p = Paragraph(line, style)
+			Story.append(p)
 			Story.append(Spacer(1, 0.2*inch))
-		print('----------')
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
 		for j in range(0, len(playList.variantList)):
 			if len(playList.variantList[j].vMediaSequenceLines) > 1:  
-				print(playList.variantURLs[j], ' Media Sequence errors on lines: ')
+				line = str(playList.variantURLs[j]) + ' Media Sequence errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
 				for k in range(0, len(playList.variantList[j].vMediaSequenceLines)):
-					print('----->', playList.variantList[j].vMediaSequenceLines[k])
+					line = '----->' + str(playList.variantList[j].vMediaSequenceLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
 	else:
-		print('---------->', playList.vTCount)
-		print('---------->', playList.vMedTagCheck)
-		print('---------->', playList.vMultiSeqTag)
+		line = '---------->' + str(playList.vTCount)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vMedTagCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vMultiSeqTag)
+		p = Paragraph(line, style)
+		Story.append(p)
 		Story.append(Spacer(1, 0.2*inch))
 		if len(playList.vMediaSequenceLines) > 0:
-			print(playList.suppliedURL, ' Target-Duration errors on lines: ')
-			print('----------')
+			line = str(playList.suppliedURL) + ' Target-Duration errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
 			for i in range(0, len(playList.vMediaSequenceLines)):
-				print('----->', playList.vMediaSequenceLines[i])
+				line = '----->' + str(playList.vMediaSequenceLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<DISCONTINUITY SEQUENCE CHECKS>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# #then just go through the variant list and print the output
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i])
-			# print('\t\t\t', playList.variantList[i].vDSTCount)
-			# print('\t\t\t', playList.variantList[i].DSTagCheck)
-			# print('\t\t\t', playList.variantList[i].vDSMultiCheck)
-			# print('')
-		# print('----------')
-		# for j in range(0, len(playList.variantList)):
-			# if len(playList.variantList[j].vDiscSequenceLines) > 1:  
-				# print(playList.variantURLs[j], ' Discontinuity Sequence errors on lines: ')
-				# for k in range(0, len(playList.variantList[j].vDiscSequenceLines)):
-					# print('\t', playList.variantList[j].vDiscSequenceLines[k])
-	# else:
-		# print('\t\t\t', playList.vDSTCount)
-		# print('\t\t\t', playList.DSTagCheck)
-		# print('\t\t\t', playList.vDSMultiCheck)
-		# print('')
-		# if len(playList.vDiscSequenceLines) > 0:
-			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vDiscSequenceLines)):
-				# print('\t', playList.vDiscSequenceLines[i])
-	# print('')
-	# print('-----<<IFRAME ONLY CHECKS>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# #then just go through the variant list and print the output
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i])
-			# print('\t\t\t', playList.variantList[i].vFrameCheck)
-			# print('\t\t\t', playList.variantList[i].vMediaSeg)
-			# print('')
-		# print('----------')
-		# for j in range(0, len(playList.variantList)):
-			# if len(playList.variantList[j].vIFramesOnlyLines) > 1:  
-				# print(playList.variantURLs[j], ' IFrame Only errors on lines: ')
-				# for k in range(0, len(playList.variantList[j].vIFramesOnlyLines)):
-					# print('\t', playList.variantList[j].vIFramesOnlyLines[k])
-	# else:
-		# print('\t\t\t', playList.vFrameCheck)
-		# print('\t\t\t', playList.vMediaSeg)
-		# print('')
-		# if len(playList.vIFramesOnlyLines) > 0:
-			# print(playList.suppliedURL, ' IFrame Only errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vIFramesOnlyLines)):
-				# print('\t', playList.vIFramesOnlyLines[i])
-	
+	line = '-----<=DISCONTINUITY SEQUENCE CHECKS=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		#then just go through the variant list and print the output
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i])
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vDSTCount)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].DSTagCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->'+ str(playList.variantList[i].vDSMultiCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vDiscSequenceLines) > 1:  
+				line = str(playList.variantURLs[j]) + ' Discontinuity Sequence errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[j].vDiscSequenceLines)):
+					line = '----->' + str(playList.variantList[j].vDiscSequenceLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+	else:
+		line = '---------->' + str(playList.vDSTCount)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.DSTagCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vDSMultiCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vDiscSequenceLines) > 0:
+			line = str(playList.suppliedURL) + ' Target-Duration errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.vDiscSequenceLines)):
+				line = '----->' + str(playList.vDiscSequenceLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	line = '-----<=IFRAME ONLY CHECKS=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		#then just go through the variant list and print the output
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i])
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vFrameCheck)
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '---------->' + str(playList.variantList[i].vMediaSeg)
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		for j in range(0, len(playList.variantList)):
+			if len(playList.variantList[j].vIFramesOnlyLines) > 1:  
+				line = str(playList.variantURLs[j]) + ' IFrame Only errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[j].vIFramesOnlyLines)):
+					line = '----->' + str(playList.variantList[j].vIFramesOnlyLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+	else:
+		line = '---------->' + str(playList.vFrameCheck)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.vMediaSeg)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vIFramesOnlyLines) > 0:
+			line = str(playList.suppliedURL) + ' IFrame Only errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+			for i in range(0, len(playList.vIFramesOnlyLines)):
+				line = '----->' + str(playList.vIFramesOnlyLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+	Story.append(Spacer(1, 0.2*inch))
 	p = Paragraph('<<##--------------- End of Report ---------------##>>', style)
 	Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
