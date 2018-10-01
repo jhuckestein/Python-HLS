@@ -2133,49 +2133,95 @@ def createPDF(header, playList, fileName):
 				p = Paragraph(line, style)
 				Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<STREAM INF CHECK>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# print('\t\t\t', playList.mResultLine)
-		# print('\t\t\t', playList.mResultBW)
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i], '\t', playList.variantList[i].vResultTag)
-		# print('')
-		# if len(playList.mStreamInfLines) > 0:
-			# print('----------')
-			# print(playList.suppliedURL, ' stream INF errors on lines: ')
-			# for i in range(0, len(playList.mStreamInfLines)):
-				# print('\t', playList.mStreamInfLines[i])
-		# for i in range(0, len(playList.variantList)):
-			# if len(playList.variantList[i].vStreamInfLines) > 0:
-				# print(playList.variantURLs[i], ' stream INF errors on lines: ')
-				# for k in range(0, len(playList.variantList[i].vStreamInfLines)):
-					# print('\t', playList.variantList[i].vStreamInfLines[k])
-				# print('')
-	# else:
-		# print('\t\t\t', playList.vResultTag)
-		# print('')
-		# if len(playList.vStreamInfLines) > 0:
-			# print(playList.suppliedURL, ' stream INF errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vStreamInfLines)):
-				# print('\t', playList.vStreamInfLines[i])
-	# print('')
-	# if playList.master:
-		# print('-----<<IFRAME CHECK>>-----')
-		# print('For the given URL: ', playList.suppliedURL)
-		# print('')
-		# print('\t\t\t', playList.mBWidth)
-		# print('\t\t\t', playList.mURI)
-		# if len(playList.mIFrameLines) > 0:
-			# print('----------')
-			# print('EXT-X-I-FRAME-STREAM-INF errors on lines: ')
-			# for i in range(0, len(playList.mIFrameLines)):
-				# print('\t', playList.mIFrameLines[i])
-		# print('')
+	line = '-----<=STREAM INF CHECK=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		line = '---------->' + str(playList.mResultLine)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.mResultBW)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].vResultTag)
+			p = Paragraph(line, style)
+			Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.mStreamInfLines) > 0:
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = str(playList.suppliedURL) + ' stream INF errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.mStreamInfLines)):
+				line = '----->' + str(playList.mStreamInfLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vStreamInfLines) > 0:
+				line = str(playList.variantURLs[i]) + ' stream INF errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[i].vStreamInfLines)):
+					line = '----->' + str(playList.variantList[i].vStreamInfLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+				Story.append(Spacer(1, 0.2*inch))
+	else:
+		line = '---------->' + str(playList.vResultTag)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.vStreamInfLines) > 0:
+			line = str(playList.suppliedURL) + ' stream INF errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.vStreamInfLines)):
+				line = '----->' + str(playList.vStreamInfLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		line = '-----<=IFRAME CHECK=>-----'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'For the given URL: ' + str(playList.suppliedURL)
+		p = Paragraph(line, style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		line = '---------->' + str(playList.mBWidth)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '---------->' + str(playList.mURI)
+		p = Paragraph(line, style)
+		Story.append(p)
+		if len(playList.mIFrameLines) > 0:
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = 'EXT-X-I-FRAME-STREAM-INF errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.mIFrameLines)):
+				line = '----->' + str(playList.mIFrameLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
 	# if playList.master:
 		# print('-----<<SESSION DATA CHECK>>-----')
 		# print('For the given URL: ', playList.suppliedURL)
