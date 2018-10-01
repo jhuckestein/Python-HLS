@@ -55,9 +55,13 @@ import getopt
 import re
 import logging
 import requests
-import docx
-from docx import Document
-import sys
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, Frame
+from reportlab.lib.colors import blue as blue
+from PyPDF2 import PdfFileWriter, PdfFileReader
 import os
 
 ##End package import section
@@ -1141,10 +1145,7 @@ class MediaSequenceCheck(Validator):
 			errorLines.clear
 			pList.vMediaSequenceLines = []
 			tCount, tagCheck, multiTag, errorLines = pList.vMediaSequence(self)
-			# print("tCount = ", tCount)
-			# print("tagCheck = ", tagCheck)
-			# print("multiTag = ", multiTag)
-			# print("errorLines = ", errorLines)
+			
 			if not tagCheck or multiTag:
 				for line in range(0, len(errorLines)):
 					pList.vMediaSequenceLines.append(errorLines[line])
@@ -1234,9 +1235,6 @@ class IFramesOnlyCheck(Validator):
 			errorLines = []
 			errorLines.clear
 			frameCheck, mediaSeg, errorLines = pList.vIFramesOnly(self)
-			print('frameCheck ', frameCheck)
-			print('media ', mediaSeg)
-			print(errorLines)
 			if mediaSeg:
 				for line in range(0, len(errorLines)):
 					pList.vIFramesOnlyLines.append(errorLines[line])
@@ -1884,10 +1882,376 @@ def screenPrint (playList):
 ####################################
 
 ####################################
+# PDF Generation Functions
+#
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.rl_config import defaultPageSize
+from reportlab.lib.units import inch
+PAGE_HEIGHT=defaultPageSize[1]; PAGE_WIDTH=defaultPageSize[0]
+styles = getSampleStyleSheet()
+
+
+def myFirstPage(canvas, doc):
+	canvas.saveState()
+	Title = 'Validation Report'
+	pageinfo = 'Validation Report'
+	#canvas.setFillColor(blue)
+	canvas.setFont('Times-Bold', 16)
+	#canvas.drawCentredString(PAGE_WIDTH/2.0, PAGE_HEIGHT-108, Title)
+	canvas.setFont('Times-Roman', 9)
+	canvas.drawString(inch, 0.75 * inch, "First Page / %s" % pageinfo)
+	canvas.restoreState()
+	
+def myLaterPages(canvas, doc):
+	canvas.saveState()
+	#blue = reportlabs.lib.colors.blue
+	#canvas.setFillColor(blue)
+	pageinfo = 'Validation Report'
+	canvas.setFont('Times-Roman', 9)
+	canvas.drawString(inch, 0.75 * inch, "Page %d %s" % (doc.page, pageinfo))
+	canvas.restoreState()
+	
+def createPDF(header, playList, fileName):
+	## fileName is then used to set pdf below and both calling cases already
+	## set the string to '.pdf'
+	doc = SimpleDocTemplate(fileName)
+	Story = [Spacer(1,2*inch)]
+	Story.clear()
+	style = styles["Normal"]
+	style.textColor = blue
+	## First add the Header to the 'Story'
+	for line in range(0, len(header)):
+		p = Paragraph(header[line], style)
+		Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+	### Now add the playlist specific results to the 'Story'
+	if playList.master:
+		p = Paragraph('Variants listed in Master Playlist:', style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			p = Paragraph(playList.variantURLs[i], style)
+			Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+	Story.append(Spacer(1, 0.2*inch))
+	p = Paragraph('-----<<HEADER CHECK>>-----', style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL) + '----->' + str(playList.ckHeader)
+	p = Paragraph(line, style)
+	Story.append(p)
+	if playList.master:
+		p = Paragraph('Variant List:', style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].ckHeader)
+			p = Paragraph(line, style)
+			Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+	Story.append(Spacer(1, 0.2*inch))
+	# print('-----<<VERSION CHECK>>-----')
+	# if playList.master:
+		# print('For the given URL: ', playList.suppliedURL, '\t', playList.mVersionCk)
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i], ' \t\t\t', playList.variantList[i].vVersionCk)
+		# print('')
+		# if len(playList.verCkErrorLines) > 0:
+			# print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
+		# for i in range(0, len(playList.variantList)):
+			# if len(playList.variantList[i].verCkErrorLines) > 0:
+				# print(playList.variantURLs[i], ' multiple tags on lines: ', playList.variantList[i].verCkErrorLines)
+	# else:
+		# print('For the given URL: ', playList.suppliedURL, '\t', playList.vVersionCk)
+		# if len(playList.verCkErrorLines) > 0:
+			# print(playList.suppliedURL, ' multiple tags on lines: ', playList.verCkErrorLines)
+	# print('')
+	# print('-----<<COMPATIBILITY CHECK>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# print('\t\t\t', playList.compService)
+		# print('\t\t\t', playList.compProgram)
+		# print('\t\t\t', playList.compCache)
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i], '\t', playList.variantList[i].compCheckV2)
+			# print('\t\t\t', playList.variantList[i].compCheckV3)
+			# print('\t\t\t', playList.variantList[i].compCheckV4)
+			# print('\t\t\t', playList.variantList[i].compCheckV5)
+			# print('\t\t\t', playList.variantList[i].compCheckV6)
+			# print('\t\t\t', playList.variantList[i].compCheckV7)
+		# if len(playList.verCompCkErrorLines) > 0:
+			# print(playLIst.suppliedURL, ' compatibility errors on lines: ', playList.verCompCkErrorLines)
+		# for i in range(0, len(playList.variantList)):
+			# if len(playList.variantList[i].verCompCkErrorLines) > 0:
+				# print(playList.variantURLs[i], ' compatibility errors on lines: ')
+				# for k in range(0, len(playList.variantList[i].verCompCkErrorLines)):
+					# print('\t', playList.variantList[i].verCompCkErrorLines[k])
+	# else:
+		# print('\t\t\t', playList.compCheckV2)
+		# print('\t\t\t', playList.compCheckV3)
+		# print('\t\t\t', playList.compCheckV4)
+		# print('\t\t\t', playList.compCheckV5)
+		# print('\t\t\t', playList.compCheckV6)
+		# print('\t\t\t', playList.compCheckV7)
+		# if len(playList.verCompCkErrorLines) > 0:
+			# print(playLIst.suppliedURL, ' compatibility errors on lines: ')
+			# for i in range(0, len(playList.verCompCkErrorLines)):
+				# print('\t', playList.verCompCkErrorLines[i])
+	# print('')
+	# print('-----<<MIXED TAGS CHECK>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# print(playList.mTagsResult)
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i], '\t', playList.variantList[i].vTagsResult)
+		# print('')
+		# if len(playList.mTagsErrorLines) > 0:
+			# print('----------')
+			# print(playList.suppliedURL, ' mixed tags errors on lines: ')
+			# for i in range(0, len(playList.mTagsErrorLines)):
+				# print('\t', playList.mTagsErrorLines[i])
+		# for i in range(0, len(playList.variantList)):
+			# if len(playList.variantList[i].vTagsErrorLines) > 0:
+				# print(playList.variantURLs[i], ' mixed tags errors on lines: ')
+				# for k in range(0, len(playList.variantList[i].vTagsErrorLines)):
+					# print('\t', playList.variantList[i].vTagsErrorLines[k])
+	# else:
+		# print('\t\t\t', playList.vTagsResult)
+		# if len(playList.vTagsErrorLines) > 0:
+			# print('')
+			# print(playList.suppliedURL, ' mixed tags errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vTagsErrorLines)):
+				# print('\t', playList.vTagsErrorLines[i])
+	# print('')
+	# print('-----<<STREAM INF CHECK>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# print('\t\t\t', playList.mResultLine)
+		# print('\t\t\t', playList.mResultBW)
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i], '\t', playList.variantList[i].vResultTag)
+		# print('')
+		# if len(playList.mStreamInfLines) > 0:
+			# print('----------')
+			# print(playList.suppliedURL, ' stream INF errors on lines: ')
+			# for i in range(0, len(playList.mStreamInfLines)):
+				# print('\t', playList.mStreamInfLines[i])
+		# for i in range(0, len(playList.variantList)):
+			# if len(playList.variantList[i].vStreamInfLines) > 0:
+				# print(playList.variantURLs[i], ' stream INF errors on lines: ')
+				# for k in range(0, len(playList.variantList[i].vStreamInfLines)):
+					# print('\t', playList.variantList[i].vStreamInfLines[k])
+				# print('')
+	# else:
+		# print('\t\t\t', playList.vResultTag)
+		# print('')
+		# if len(playList.vStreamInfLines) > 0:
+			# print(playList.suppliedURL, ' stream INF errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vStreamInfLines)):
+				# print('\t', playList.vStreamInfLines[i])
+	# print('')
+	# if playList.master:
+		# print('-----<<IFRAME CHECK>>-----')
+		# print('For the given URL: ', playList.suppliedURL)
+		# print('')
+		# print('\t\t\t', playList.mBWidth)
+		# print('\t\t\t', playList.mURI)
+		# if len(playList.mIFrameLines) > 0:
+			# print('----------')
+			# print('EXT-X-I-FRAME-STREAM-INF errors on lines: ')
+			# for i in range(0, len(playList.mIFrameLines)):
+				# print('\t', playList.mIFrameLines[i])
+		# print('')
+	# if playList.master:
+		# print('-----<<SESSION DATA CHECK>>-----')
+		# print('For the given URL: ', playList.suppliedURL)
+		# print('')
+		# print('\t\t\t', playList.mIDCheck)
+		# print('\t\t\t', playList.mJSONCk)
+		# print('\t\t\t', playList.mURICk)
+		# print('\t\t\t', playList.mMultCk)
+		# print('\t\t\t', playList.mMissCk)
+		# if len(playList.mSessionDataLines) > 0:
+			# print('----------')
+			# print('EXT-X-SESSION-DATA errors on lines: ')
+			# for i in range(0, len(playList.mSessionDataLines)):
+				# print('\t', playList.mSessionDataLines[i])
+		# print('')
+	# print('-----<<MEDIA MASTER CHECK>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# print('\t\t\t', playList.mSegTag)
+		# print('\t\t\t', playList.mStartTag)
+		# print('\t\t\t', playList.mTimeTag)
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i], '\t', playList.variantList[i].vSegTag)
+			# print('\t\t\t', playList.variantList[i].vStartTag)
+			# print('\t\t\t', playList.variantList[i].vTimeTag)
+		# if len(playList.mMediaMasterLines) > 0:
+			# print(playLIst.suppliedURL, ' Media-Master errors on lines: ')
+			# for i in range(0, len(playList.mMediaMasterLines)):
+				# print(playList.mMediaMasterLines[i])
+		# for i in range(0, len(playList.variantList)):
+			# if len(playList.variantList[i].vMediaMasterLines) > 0:
+				# print(playList.variantURLs[i], ' Media-Master errors on lines: ')
+				# for k in range(0, len(playList.variantList[i].vMediaMasterLines)):
+					# print('\t', playList.variantList[i].vMediaMasterLines[k])
+	# else:
+		# print('\t\t\t', playList.vSegTag)
+		# print('\t\t\t', playList.vStartTag)
+		# print('\t\t\t', playList.vTimeTag)
+		# print('')
+		# if len(playList.vMediaMasterLines) > 0:
+			# print(playList.suppliedURL, ' Media-Master errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vMediaMasterLines)):
+				# print('\t', playList.vMediaMasterLines[i])
+	# print('')
+	# print('-----<<TARGET DURATION CHECK>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# #then just go through the variant list and print the output
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i])
+			# print('\t\t\t', playList.variantList[i].vTagCheck)
+			# print('\t\t\t', playList.variantList[i].vMultiTag)
+			# print('\t\t\t', playList.variantList[i].vDurCheck)
+			# print('')
+		# print('----------')
+		# for j in range(0, len(playList.variantList)):
+			# if len(playList.variantList[j].vTargetDurationLines) > 1:  
+				# print(playList.variantURLs[j], ' Target-Duration errors on lines: ')
+				# for k in range(0, len(playList.variantList[j].vTargetDurationLines)):
+					# print('\t', playList.variantList[j].vTargetDurationLines[k])
+	# else:
+		# print('\t\t\t', playList.vTagCheck)
+		# print('\t\t\t', playList.vMultiTag)
+		# print('\t\t\t', playList.vDurCheck)
+		# print('')
+		# if len(playList.vTargetDurationLines) > 0:
+			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vTargetDurationLines)):
+				# print('\t', playList.vTargetDurationLines[i])
+	# print('')
+	# print('-----<<MEDIA SEQUENCE CHECKS>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# #then just go through the variant list and print the output
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i])
+			# print('\t\t\t', playList.variantList[i].vTCount)
+			# print('\t\t\t', playList.variantList[i].vMedTagCheck)
+			# print('\t\t\t', playList.variantList[i].vMultiSeqTag)
+			# print('')
+		# print('----------')
+		# for j in range(0, len(playList.variantList)):
+			# if len(playList.variantList[j].vMediaSequenceLines) > 1:  
+				# print(playList.variantURLs[j], ' Media Sequence errors on lines: ')
+				# for k in range(0, len(playList.variantList[j].vMediaSequenceLines)):
+					# print('\t', playList.variantList[j].vMediaSequenceLines[k])
+	# else:
+		# print('\t\t\t', playList.vTCount)
+		# print('\t\t\t', playList.vMedTagCheck)
+		# print('\t\t\t', playList.vMultiSeqTag)
+		# print('')
+		# if len(playList.vMediaSequenceLines) > 0:
+			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vMediaSequenceLines)):
+				# print('\t', playList.vMediaSequenceLines[i])
+	# print('')
+	# print('-----<<DISCONTINUITY SEQUENCE CHECKS>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# #then just go through the variant list and print the output
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i])
+			# print('\t\t\t', playList.variantList[i].vDSTCount)
+			# print('\t\t\t', playList.variantList[i].DSTagCheck)
+			# print('\t\t\t', playList.variantList[i].vDSMultiCheck)
+			# print('')
+		# print('----------')
+		# for j in range(0, len(playList.variantList)):
+			# if len(playList.variantList[j].vDiscSequenceLines) > 1:  
+				# print(playList.variantURLs[j], ' Discontinuity Sequence errors on lines: ')
+				# for k in range(0, len(playList.variantList[j].vDiscSequenceLines)):
+					# print('\t', playList.variantList[j].vDiscSequenceLines[k])
+	# else:
+		# print('\t\t\t', playList.vDSTCount)
+		# print('\t\t\t', playList.DSTagCheck)
+		# print('\t\t\t', playList.vDSMultiCheck)
+		# print('')
+		# if len(playList.vDiscSequenceLines) > 0:
+			# print(playList.suppliedURL, ' Target-Duration errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vDiscSequenceLines)):
+				# print('\t', playList.vDiscSequenceLines[i])
+	# print('')
+	# print('-----<<IFRAME ONLY CHECKS>>-----')
+	# print('For the given URL: ', playList.suppliedURL)
+	# print('')
+	# if playList.master:
+		# #then just go through the variant list and print the output
+		# print('----------')
+		# print('Variant List:')
+		# for i in range(0, len(playList.variantList)):
+			# print(playList.variantURLs[i])
+			# print('\t\t\t', playList.variantList[i].vFrameCheck)
+			# print('\t\t\t', playList.variantList[i].vMediaSeg)
+			# print('')
+		# print('----------')
+		# for j in range(0, len(playList.variantList)):
+			# if len(playList.variantList[j].vIFramesOnlyLines) > 1:  
+				# print(playList.variantURLs[j], ' IFrame Only errors on lines: ')
+				# for k in range(0, len(playList.variantList[j].vIFramesOnlyLines)):
+					# print('\t', playList.variantList[j].vIFramesOnlyLines[k])
+	# else:
+		# print('\t\t\t', playList.vFrameCheck)
+		# print('\t\t\t', playList.vMediaSeg)
+		# print('')
+		# if len(playList.vIFramesOnlyLines) > 0:
+			# print(playList.suppliedURL, ' IFrame Only errors on lines: ')
+			# print('----------')
+			# for i in range(0, len(playList.vIFramesOnlyLines)):
+				# print('\t', playList.vIFramesOnlyLines[i])
+	
+	p = Paragraph('<<##--------------- End of Report ---------------##>>', style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	doc.build(Story, onFirstPage = myFirstPage, onLaterPages = myLaterPages)
+
+#
+# End of PDF Generation Functions
+####################################
+
+####################################
 #
 # This is the main program function
 def main(argv):
-	outputFile = 'output.txt'  #Used for batch mode output to local disk
+	outputFile = 'output.pdf'  #Used for batch mode output to local disk
 	
 	## First check to see if there are enough inputs, if not provide syntax
 	if len(sys.argv) < 3:
@@ -1915,7 +2279,6 @@ def main(argv):
 		#so, I need to try and open the file given which contains playlists
 		url = sys.argv[2]
 		batchFile, validPlayL, webURL = openURL(url)
-		outFileHandle, pHold1, pHold2 = openURL(outputFile)  #pHold1 and pHold2 NOT used
 		
 		#If the user gave us a playlist then we only do this once
 		if validPlayL:
@@ -1958,60 +2321,58 @@ def main(argv):
 			iFrameOnlyCheck = IFramesOnlyCheck()
 			playlist.accept(iFrameOnlyCheck)
 			
-			######### This block gets upgraded for HLSv3.py
-			#Create a Header in the output file
-			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
+			######### This block has been upgraded for HLSv3.py
+			#Create a Header to send to createPDF():
+			Header = []
+			Header.clear()
+			Header.append('<<##--------------------- Report ------------------------##>>')
 			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
 			s2 = str(secondLine)
-			outFileHandle.write(s2)
-			outFileHandle.write('\n')
+			Header.append(s2)
+			Header.append(' ')
 			thirdLine = ('The playlist was a Master =', playlist.master)
 			s3 = str(thirdLine)
-			outFileHandle.write(s3)
-			outFileHandle.write('\n')
+			Header.append(s3)
+			Header.append(' ')
 			fourthLine = ('The given URL was =', playlist.suppliedURL)
 			s4 = str(fourthLine)
-			outFileHandle.write(s4)
-			outFileHandle.write('\n')
+			Header.append(s4)
+			Header.append(' ')
 			
-			#Now take the check results and print them to the output file
-			for line in range(0, len(playlist.checkResults)):
-				outFileHandle.write(playlist.checkResults[line])
-				outFileHandle.write('\n')
-			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
-			outFileHandle.close()
-			batchFile.close()
+			## In this case, this was a valid playlist file, so convert that to 
+			## the Name for the output report:
+			nameList = str(batchFile).split('.')
+			Name = nameList[0] + '.pdf'
+			createPDF(Header, playlist, Name)
 			
 			########### End of upgrade block for HLSv3.py
 		#Case where the user supplied a text file of playlist files
 		else:
-			###### Block to upgrade for HLSv3.py to a word doc output
-			
-			#Create a Header in the output file
-			outFileHandle.write('<<##--------------------- Report ------------------------##>>\n')
-			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
-			s2 = str(secondLine)
-			outFileHandle.write(s2)
-			outFileHandle.write('\n')
-			
-			###### End of Block to upgrade
-			
+			###### Block has been upgraded for HLSv3.py to PDF output:
 			#Now process each line in the batch file containing playlist file URLs
 			for line in batchFile:
+				Header = []
+				Header.clear()
+				#Create a Header in the output file
+				Header.append('<<##--------------------- Report ------------------------##>>')
+				secondLine = 'The valid m3u8 check for the URL was: ' + str(validPlayL)
+				s2 = str(secondLine)
+				Header.append(s2)
+				Header.append(' ')
 				inputLine = line.strip('\n')
 				playListFile, valPlayL, wURL = openURL(inputLine)
 				playlist = createPlaylist(playListFile, valPlayL, wURL, inputLine)
 				
 				#Add formatting to the output file so we know about the file
-				outFileHandle.write('<<----------Playlist Report---------->>\n')
-				thirdLine = ('The playlist was a Master =', playlist.master)
+				Header.append('<<----------Playlist Report---------->>')
+				thirdLine = 'The playlist was a Master =' + str(playlist.master)
 				s3 = str(thirdLine)
-				outFileHandle.write(s3)
-				outFileHandle.write('\n')
-				fourthLine = ('The given URL was =', playlist.suppliedURL)
+				Header.append(s3)
+				Header.append(' ')
+				fourthLine = 'The given URL was =' + str(playlist.suppliedURL)
 				s4 = str(fourthLine)
-				outFileHandle.write(s4)
-				outFileHandle.write('\n')
+				Header.append(s4)
+				Header.append(' ')
 				
 				#We have a playlist, so run our checks in order
 				hCheck = HeaderCheck()
@@ -2050,24 +2411,21 @@ def main(argv):
 				iFrameOnlyCheck = IFramesOnlyCheck()
 				playlist.accept(iFrameOnlyCheck)
 				
-				###### Second batch file block to upgrade HLSv3.py
+				### IN this case, the playListFile refers to the filehandle for the 
+				#current object.  It is a good Name candidate but must be extracted:
+				print('playListFile = ', playListFile)
+				nameList = str(playListFile).split(' ')
+				Name1 = nameList[1].split("'")
+				Name = Name1[1].replace('.m3u8', '.pdf')
+				print('The name of the output file is: ', Name)
 				
-				#Now print the results to the output file
-				for line in range(0, len(playlist.checkResults)):
-					outFileHandle.write(playlist.checkResults[line])
-					outFileHandle.write('\n')
+				###### Second batch file block has been upgraded for PDF output
+				createPDF(Header, playlist, Name)
 				
-				#Now add some formatting to the output file
-				outFileHandle.write('<<--------------------End of Individual Playlist-------------------->>\n')
-				outFileHandle.write('\n')
 				
 				#Now close the playlist file handle
 				playListFile.close()
-			#Now indicate that the report is concluded
-			outFileHandle.write('<<##--------------- End of Report ---------------##>>')
 			
-			#Close the output file and batchFile
-			outFileHandle.close()
 			batchFile.close()
 			    ###### End of second batch file block to upgrade HLSv3.py
 	
