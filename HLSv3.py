@@ -2072,35 +2072,67 @@ def createPDF(header, playList, fileName):
 				p = Paragraph(line, style)
 				Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
-	# print('-----<<MIXED TAGS CHECK>>-----')
-	# print('For the given URL: ', playList.suppliedURL)
-	# print('')
-	# if playList.master:
-		# print(playList.mTagsResult)
-		# print('----------')
-		# print('Variant List:')
-		# for i in range(0, len(playList.variantList)):
-			# print(playList.variantURLs[i], '\t', playList.variantList[i].vTagsResult)
-		# print('')
-		# if len(playList.mTagsErrorLines) > 0:
-			# print('----------')
-			# print(playList.suppliedURL, ' mixed tags errors on lines: ')
-			# for i in range(0, len(playList.mTagsErrorLines)):
-				# print('\t', playList.mTagsErrorLines[i])
-		# for i in range(0, len(playList.variantList)):
-			# if len(playList.variantList[i].vTagsErrorLines) > 0:
-				# print(playList.variantURLs[i], ' mixed tags errors on lines: ')
-				# for k in range(0, len(playList.variantList[i].vTagsErrorLines)):
-					# print('\t', playList.variantList[i].vTagsErrorLines[k])
-	# else:
-		# print('\t\t\t', playList.vTagsResult)
-		# if len(playList.vTagsErrorLines) > 0:
-			# print('')
-			# print(playList.suppliedURL, ' mixed tags errors on lines: ')
-			# print('----------')
-			# for i in range(0, len(playList.vTagsErrorLines)):
-				# print('\t', playList.vTagsErrorLines[i])
-	# print('')
+	line = '-----<=MIXED TAGS CHECK=>-----'
+	p = Paragraph(line, style)
+	Story.append(p)
+	line = 'For the given URL: ' + str(playList.suppliedURL)
+	p = Paragraph(line, style)
+	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
+	if playList.master:
+		line = str(playList.mTagsResult)
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = '----------'
+		p = Paragraph(line, style)
+		Story.append(p)
+		line = 'Variant List:'
+		p = Paragraph(line, style)
+		Story.append(p)
+		for i in range(0, len(playList.variantList)):
+			line = str(playList.variantURLs[i]) + '----->' + str(playList.variantList[i].vTagsResult)
+			p = Paragraph(line, style)
+			Story.append(p)
+		Story.append(Spacer(1, 0.2*inch))
+		if len(playList.mTagsErrorLines) > 0:
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = str(playList.suppliedURL) + ' mixed tags errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.mTagsErrorLines)):
+				line = '----->' + str(playList.mTagsErrorLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+			Story.append(Spacer(1, 0.2*inch))
+		for i in range(0, len(playList.variantList)):
+			if len(playList.variantList[i].vTagsErrorLines) > 0:
+				line = str(playList.variantURLs[i]) + ' mixed tags errors on lines: '
+				p = Paragraph(line, style)
+				Story.append(p)
+				for k in range(0, len(playList.variantList[i].vTagsErrorLines)):
+					line = '----->' + str(playList.variantList[i].vTagsErrorLines[k])
+					p = Paragraph(line, style)
+					Story.append(p)
+				Story.append(Spacer(1, 0.2*inch))
+	else:
+		line = '---------->' + str(playList.vTagsResult)
+		p = Paragraph(line, style)
+		Story.append(p)
+		if len(playList.vTagsErrorLines) > 0:
+			Story.append(Spacer(1, 0.2*inch))
+			line = str(playList.suppliedURL) + ' mixed tags errors on lines: '
+			p = Paragraph(line, style)
+			Story.append(p)
+			line = '----------'
+			p = Paragraph(line, style)
+			Story.append(p)
+			for i in range(0, len(playList.vTagsErrorLines)):
+				line = '----->' + str(playList.vTagsErrorLines[i])
+				p = Paragraph(line, style)
+				Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
 	# print('-----<<STREAM INF CHECK>>-----')
 	# print('For the given URL: ', playList.suppliedURL)
 	# print('')
