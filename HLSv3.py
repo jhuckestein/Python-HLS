@@ -43,7 +43,7 @@
 # HLSv3.py is an upgrade of HLSv2.py.  In this release the functionality is
 # expanded to include print functions which will print out a word document
 # and a re-designed print output to the screen.
-#   1) Batch mode will output to a Word Doc file
+#   1) Batch mode will output to a PDF file
 #   2) Command line mode will have a nicely formatted print-out
 #
 ####################################
@@ -1566,6 +1566,7 @@ def createPlaylist(rsrc, urlFlag, webFlag, URL):
 # 
 # This function is used to print out the report to the screen
 def screenPrint (playList):
+	logging.info("++---------->> Entered screenPrint:")
 	print('<<##--------------------- Report ------------------------##>>')
 	print('The playlist was a Master =', playList.master)
 	print('The given URL was =', playList.suppliedURL)
@@ -1876,6 +1877,7 @@ def screenPrint (playList):
 	print('<<##--------------- End of Report ---------------##>>')
 	print('')
 	print('')
+	logging.info("<<----------++ Leaving screenPrint:")
 	return
 #
 # End of screenPrint
@@ -1913,6 +1915,8 @@ def myLaterPages(canvas, doc):
 	canvas.restoreState()
 	
 def createPDF(header, playList, fileName):
+	logging.info("++---------->> Entered createPDF:")
+	logging.info("++--------------->> Filename passed in: %s", fileName)
 	## fileName is then used to set pdf below and both calling cases already
 	## set the string to '.pdf'
 	doc = SimpleDocTemplate(fileName)
@@ -1924,7 +1928,7 @@ def createPDF(header, playList, fileName):
 	for line in range(0, len(header)):
 		p = Paragraph(header[line], style)
 		Story.append(p)
-		Story.append(Spacer(1, 0.2*inch))
+	Story.append(Spacer(1, 0.2*inch))
 	### Now add the playlist specific results to the 'Story'
 	if playList.master:
 		line = 'Variants listed in Master Playlist:'
@@ -1941,6 +1945,7 @@ def createPDF(header, playList, fileName):
 	line = 'For the given URL: ' + str(playList.suppliedURL) + '----->' + str(playList.ckHeader)
 	p = Paragraph(line, style)
 	Story.append(p)
+	Story.append(Spacer(1, 0.2*inch))
 	if playList.master:
 		p = Paragraph('Variant List:', style)
 		Story.append(p)
@@ -2603,6 +2608,7 @@ def createPDF(header, playList, fileName):
 	Story.append(p)
 	Story.append(Spacer(1, 0.2*inch))
 	doc.build(Story, onFirstPage = myFirstPage, onLaterPages = myLaterPages)
+	logging.info("<<----------++ Leaving createPDF:")
 
 #
 # End of PDF Generation Functions
@@ -2643,6 +2649,7 @@ def main(argv):
 		
 		#If the user gave us a playlist then we only do this once
 		if validPlayL:
+			logging.info("++--------------->> Batch mode with a valid playlist file:")
 			playlist = createPlaylist(batchFile, validPlayL, webURL, url)
 			
 			#We have a playlist, so run our checks in order
@@ -2687,28 +2694,27 @@ def main(argv):
 			Header = []
 			Header.clear()
 			Header.append('<<##--------------------- Report ------------------------##>>')
-			secondLine = ('The valid m3u8 check for the URL was: ', validPlayL)
+			secondLine = 'The valid m3u8 check for the URL was: ' + str(validPlayL)
 			s2 = str(secondLine)
 			Header.append(s2)
-			Header.append(' ')
-			thirdLine = ('The playlist was a Master =', playlist.master)
+			thirdLine = 'The playlist was a Master =' + str(playlist.master)
 			s3 = str(thirdLine)
 			Header.append(s3)
-			Header.append(' ')
-			fourthLine = ('The given URL was =', playlist.suppliedURL)
+			fourthLine = 'The given URL was =' + str(playlist.suppliedURL)
 			s4 = str(fourthLine)
 			Header.append(s4)
-			Header.append(' ')
 			
 			## In this case, this was a valid playlist file, so convert that to 
 			## the Name for the output report:
-			nameList = str(batchFile).split('.')
+			nameList = str(playlist.suppliedURL).split('.')
 			Name = nameList[0] + '.pdf'
+			logging.info('++--------------->> Name passed to createPDF = %s', Name)
 			createPDF(Header, playlist, Name)
 			
 			########### End of upgrade block for HLSv3.py
 		#Case where the user supplied a text file of playlist files
 		else:
+			logging.info("++--------------->> Batch mode with a text file:")
 			###### Block has been upgraded for HLSv3.py to PDF output:
 			#Now process each line in the batch file containing playlist file URLs
 			for line in batchFile:
