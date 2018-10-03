@@ -2788,6 +2788,12 @@ def main(argv):
 				
 				#Now close the playlist file handle
 				playListFile.close()
+				
+				#Now clear out the current playlist
+				if playlist.master:
+					playlist = clearMaster(playlist)
+				else:
+					playlist = clearVariant(playlist)
 			
 			batchFile.close()
 			    ###### End of second batch file block to upgrade HLSv3.py
