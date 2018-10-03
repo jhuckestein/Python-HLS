@@ -12,4 +12,4 @@ When the program runs a logging file named Hlsv1.log is created in the same dire
 Release Road-Map:
    1) HLSv1.py - Basic program with all the pertinent checks : Completed
    2) HLSv2.py - Expaned checks and object attributes for determining line numbers for failures etc.: Completed (see HLSv2.one for class                    diagram)
-   3) HLSv3.py - Development of a nicer appearance and more organized report structure: Currently under development
+   3) HLSv3.py - Development of a nicer appearance and more organized report structure: Completed 10/3/2018
